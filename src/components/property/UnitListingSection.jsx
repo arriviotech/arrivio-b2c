@@ -51,13 +51,13 @@ const UnitCard = ({ unit, unitImage, onSelect }) => {
           <div className="relative w-full aspect-[16/9] overflow-hidden">
             <img src={unitImage} alt={displayName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
             {/* Tier badge on image */}
-            <span className={`absolute top-3 left-3 px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider ${tierStyle.classes}`}>
+            <span className={`absolute top-3 left-3 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${tierStyle.classes}`}>
               {tierStyle.label}
             </span>
             {/* Price on image */}
-            <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-sm">
-              <span className="text-lg font-serif font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>€{cheapestRent.toLocaleString()}</span>
-              <span className="text-xs text-[#6b7280]">/mo</span>
+            <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm rounded-lg px-2.5 py-1 shadow-sm flex items-baseline gap-0.5">
+              <span className="text-base font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>€{cheapestRent.toLocaleString()}</span>
+              <span className="text-[10px] text-[#6b7280]">/mo</span>
             </div>
           </div>
         )}
@@ -132,13 +132,13 @@ const UnitCard = ({ unit, unitImage, onSelect }) => {
               <h3 className="font-serif text-xl text-[#111827] truncate leading-tight" style={{ fontVariantNumeric: 'lining-nums' }}>
                 {displayName}
               </h3>
-              <span className={`px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider shrink-0 ${tierStyle.classes}`}>
+              <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${tierStyle.classes}`}>
                 {tierStyle.label}
               </span>
             </div>
-            <div className="text-right shrink-0 ml-3">
-              <span className="text-2xl font-serif font-bold text-[#111827]">€{cheapestRent.toLocaleString()}</span>
-              <span className="text-xs text-[#9ca3af]">/mo</span>
+            <div className="text-right shrink-0 ml-3 flex items-baseline gap-1">
+              <span className="text-lg font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>€{cheapestRent.toLocaleString()}</span>
+              <span className="text-xs text-[#6b7280]">/month</span>
             </div>
           </div>
 

@@ -40,6 +40,8 @@ export function normalizeProperty(data) {
     // Map DB column names → frontend names
     title: data.name,
     location: data.district ? `${data.district}, ${data.city}` : data.city,
+    lat: data.latitude || null,
+    lng: data.longitude || null,
 
     // Pricing for display (cents → euros)
     price: cheapestRentCents / 100,

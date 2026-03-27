@@ -9,10 +9,6 @@ import NotificationPanel from "./NotificationPanel";
 const MobileNavbar = () => {
     const location = useLocation();
     const path = location.pathname;
-
-    // Hide on property/unit detail pages (they have their own booking bottom bar)
-    const isDetailPage = path.startsWith('/property/') || path.startsWith('/unit/');
-    if (isDetailPage) return null;
     const { user, openAuthModal } = useAuth();
     const { totalSaved } = useWishlist();
     const { unreadCount } = useNotifications();
@@ -31,6 +27,10 @@ const MobileNavbar = () => {
         window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    // Hide on property/unit detail pages (they have their own booking bottom bar)
+    const isDetailPage = path.startsWith('/property/') || path.startsWith('/unit/');
+    if (isDetailPage) return null;
 
     const navItems = [
         { icon: Home, label: "Home", path: "/" },

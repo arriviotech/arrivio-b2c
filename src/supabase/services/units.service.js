@@ -115,6 +115,8 @@ function normalizeUnit(data) {
       title: property.name,
       address: [property.address_line1, property.district, property.city].filter(Boolean).join(", "),
       location: property.district ? `${property.district}, ${property.city}` : property.city,
+      lat: property.latitude || null,
+      lng: property.longitude || null,
     },
 
     // Images

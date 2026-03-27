@@ -357,7 +357,7 @@ const UnitDetailsPage = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-serif font-bold text-[#111827]">€{unit.price.toLocaleString()}</span>
+                      <span className="text-4xl font-serif font-bold text-[#111827]">€{(unit.price || 0).toLocaleString()}</span>
                       <span className="text-sm font-medium text-[#4b5563]">/ month</span>
                     </div>
                     <p className="text-xs font-bold uppercase tracking-widest text-[#9ca3af] mt-1">All bills included</p>
@@ -415,15 +415,15 @@ const UnitDetailsPage = () => {
                     <div className="pt-4 mt-3 border-t border-[#0f4c3a]/5 space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-[#4b5563]">Monthly rent</span>
-                        <span className="font-semibold">€{unit.price.toLocaleString()}</span>
+                        <span className="font-semibold">€{(unit.price || 0).toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#4b5563]">Security deposit</span>
-                        <span className="font-semibold">€{unit.deposit.toLocaleString()}</span>
+                        <span className="font-semibold">€{(unit.deposit || 0).toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#4b5563]">Holding deposit</span>
-                        <span className="font-semibold">€{unit.holdingDeposit.toLocaleString()}</span>
+                        <span className="font-semibold">€{(unit.holdingDeposit || 0).toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between items-center text-[11px] text-[#9ca3af] pt-1">
                         <span className="flex items-center gap-1"><RefreshCcw size={10} /> Security deposit</span>
@@ -476,7 +476,7 @@ const UnitDetailsPage = () => {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-2xl font-serif font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>
-                €{unit.price.toLocaleString()}<span className="text-base font-sans font-medium text-[#6b7280]"> /mo</span>
+                €{(unit.price || 0).toLocaleString()}<span className="text-base font-sans font-medium text-[#6b7280]"> /mo</span>
               </p>
               {startDate && endDate ? (
                 <button onClick={() => setIsMobileDateOpen(true)} className="text-sm text-[#0f4c3a] font-semibold hover:underline text-left">

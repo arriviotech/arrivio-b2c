@@ -68,14 +68,19 @@ const Neighborhood = ({ property }) => {
                             hoveredId={property.id}
                         />
                     </div>
-                    <div className="absolute bottom-6 left-6 right-6 p-4 bg-white/90 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl flex items-center justify-between pointer-events-none transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                    <div className="absolute bottom-6 left-6 right-6 p-4 bg-white/90 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl flex items-center justify-between pointer-events-none transform translate-y-0 opacity-100 md:translate-y-2 md:opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
                         <div className="flex items-center gap-3">
                             <MapPin className="text-[#186b53]" size={18} />
                             <span className="text-sm font-bold text-[#111827]">{property.address || property.location}</span>
                         </div>
-                        <button className="pointer-events-auto flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#111827] hover:text-[#186b53] transition-colors">
+                        <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${property.lat || ''},${property.lng || ''}&destination_place_id=${encodeURIComponent(property.address || property.location || property.city)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="pointer-events-auto flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#111827] hover:text-[#186b53] transition-colors"
+                        >
                             <Navigation size={12} /> Directions
-                        </button>
+                        </a>
                     </div>
                 </div>
 

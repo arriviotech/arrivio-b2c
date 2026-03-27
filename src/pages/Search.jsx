@@ -289,12 +289,17 @@ const Search = () => {
                       : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
                     }`}>
                       {visibleUnits.map(({ unit, property }) => (
-                        <UnitSearchCard
+                        <div
                           key={unit.id}
-                          unit={unit}
-                          property={property}
-                          onClick={() => navigate(`/unit/${unit.slug || unit.id}`)}
-                        />
+                          onMouseEnter={() => handleHoverEnter(property.id)}
+                          onMouseLeave={handleHoverLeave}
+                        >
+                          <UnitSearchCard
+                            unit={unit}
+                            property={property}
+                            onClick={() => navigate(`/unit/${unit.slug || unit.id}`)}
+                          />
+                        </div>
                       ))}
                     </div>
 
@@ -442,9 +447,9 @@ const Search = () => {
 
         {/* MAP CONTAINER */}
         <div
-          className={`fixed inset-0 z-[60] pt-20 bg-[#f0f0f0] transition-transform duration-300 ease-in-out lg:sticky lg:top-36 lg:h-[calc(100vh-9rem)] lg:z-0 lg:pt-0 lg:block lg:border-l lg:border-[#0f4c3a]/10 rounded-xl overflow-hidden shadow-sm ${showMap
-            ? 'translate-y-0 lg:translate-y-0 lg:w-[40%] lg:translate-x-0'
-            : 'translate-y-full lg:translate-y-0 lg:w-0 lg:translate-x-full lg:hidden'
+          className={`fixed inset-0 z-[60] pt-20 bg-[#f0f0f0] transition-transform duration-300 ease-in-out lg:fixed lg:top-[80px] lg:right-3 lg:bottom-3 lg:left-auto lg:w-[38%] lg:z-[25] lg:pt-0 lg:rounded-xl lg:border lg:border-[#e5e7eb] lg:shadow-lg overflow-hidden ${showMap
+            ? 'translate-y-0 lg:translate-x-0'
+            : 'translate-y-full lg:translate-x-full'
             }`}
         >
           {/* MOBILE CLOSE BUTTON */}
