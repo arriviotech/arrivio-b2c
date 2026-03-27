@@ -1,0 +1,22 @@
+# Arrivio — Crawling Rules
+# https://arrivio-g.vercel.app
+
+User-agent: *
+Allow: /
+
+# Block private/auth pages
+Disallow: /admin/
+Disallow: /payment
+Disallow: /paid
+Disallow: /signin
+Disallow: /login
+Disallow: /signup
+Disallow: /profile
+Disallow: /booking/review
+Disallow: /booking-success
+Disallow: /demo-contract
+Disallow: /application/details
+Disallow: /auth/callback
+
+# Sitemap
+Sitemap: https://arrivio-g.vercel.app/sitemap.xml

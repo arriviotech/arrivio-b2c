@@ -1,35 +1,92 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from "react";
+import { BrowserRouter as Router, useLocation } from "react-router-dom";
 
-function App() {
-  const [count, setCount] = useState(0)
+import { AuthProvider } from "./context/AuthContext";
+import { WishlistProvider } from "./context/WishlistContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import { LanguageProvider } from "./context/LanguageContext";
+
+import Navbar from "./components/layout/Navbar";
+import AppNavbar from "./components/layout/AppNavbar";
+import SimpleNavbar from "./components/layout/SimpleNavbar";
+import Footer from "./components/layout/Footer";
+import MobileNavbar from "./components/layout/MobileNavbar";
+import ScrollToTop from "./components/common/ScrollToTop";
+
+import AppRoutes from "./routes/AppRoutes";
+import AuthModal from "./components/auth/AuthModal";
+
+// =========================
+// LAYOUT
+// =========================
+const Layout = () => {
+  const location = useLocation();
+  const path = location.pathname;
+
+  const isProcessPage = [
+    "/signin",
+    "/application/details",
+    "/apply",
+    "/payment",
+    "/demo-contract",
+    "/booking/review",
+    "/paid"
+  ].includes(path);
+
+  const isSuccessPage = path === "/booking-success";
+
+  let CurrentNavbar;
+
+  if (path.startsWith("/profile")) {
+    CurrentNavbar = AppNavbar;
+  } else if (isSuccessPage) {
+    CurrentNavbar = SimpleNavbar;
+  } else if (isProcessPage) {
+    CurrentNavbar = () => null;
+  } else if (path === "/") {
+    CurrentNavbar = Navbar;
+  } else if (path.startsWith("/property") || path.startsWith("/unit")) {
+    CurrentNavbar = AppNavbar;
+  } else if (path.startsWith("/cities") || path.startsWith("/search") || path.startsWith("/wishlist")) {
+    CurrentNavbar = AppNavbar;
+  } else {
+    CurrentNavbar = SimpleNavbar;
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="min-h-screen flex flex-col bg-[#f2f2f2]">
+      <CurrentNavbar property={path.startsWith("/property") ? { id: path.split("/").pop() } : null} />
+
+      <main className="flex-grow">
+        <AppRoutes />
+      </main>
+
+      {!isProcessPage && !isSuccessPage && <Footer />}
+      {!isProcessPage && !isSuccessPage && <MobileNavbar />}
+    </div>
+  );
+};
+
+// =========================
+// APP ROOT
+// =========================
+function App() {
+  return (
+    <AuthProvider>
+      <LanguageProvider>
+        <Router>
+          <WishlistProvider>
+            <NotificationProvider>
+              <AuthModal />
+              <ScrollToTop />
+              <Layout />
+            </NotificationProvider>
+          </WishlistProvider>
+        </Router>
+      </LanguageProvider>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
+
