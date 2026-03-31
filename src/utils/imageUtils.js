@@ -20,6 +20,8 @@ const SUPABASE_STORAGE_RENDER = "/storage/v1/render/image/public/";
  * @returns {string}
  */
 export function getOptimizedUrl(url, { width, height, quality = 75, resize = "cover" } = {}) {
+  // Handle gallery objects { url: "..." }
+  if (url && typeof url === "object" && url.url) url = url.url;
   if (!url || typeof url !== "string") return url;
 
   // Only transform Supabase storage URLs
@@ -57,7 +59,9 @@ const SRCSET_BREAKPOINTS = [
  * @returns {string}       — srcSet attribute value, or ""
  */
 export function generateSrcSet(url, { quality = 75, resize = "cover" } = {}) {
-  if (!url || !url.includes(SUPABASE_STORAGE_OBJECT)) return "";
+  // Handle gallery objects { url: "..." }
+  if (url && typeof url === "object" && url.url) url = url.url;
+  if (!url || typeof url !== "string" || !url.includes(SUPABASE_STORAGE_OBJECT)) return "";
 
   return SRCSET_BREAKPOINTS.map(([w, descriptor]) => {
     const optimized = getOptimizedUrl(url, { width: w, quality, resize });

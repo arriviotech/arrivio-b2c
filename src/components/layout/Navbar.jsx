@@ -109,7 +109,7 @@ const Navbar = ({ variant = "app" }) => {
           initial={{ y: 0 }}
           animate={{ y: isMobile ? 0 : isVisible ? 0 : -120 }}
           transition={{ duration: 0.4, ease: 'easeInOut' }}
-          className={`fixed top-0 left-0 w-full z-[100] h-20 px-6 flex items-center justify-center
+          className={`fixed top-0 left-0 w-full z-[100] h-16 md:h-20 px-4 md:px-6 flex items-center justify-center
             ${isScrolled
               ? 'bg-[#f2f2f2]/90 backdrop-blur-xl border-b border-[#0f4c3a]/10'
               : 'bg-transparent'
@@ -148,7 +148,7 @@ const Navbar = ({ variant = "app" }) => {
           </div>
         </motion.nav>
       ) : (
-        <nav className={`${path === '/search' ? 'absolute' : 'fixed'} top-0 left-0 w-full z-[100] h-20 px-6 md:px-12 bg-[#f2f2f2]/90 backdrop-blur-xl transition-shadow duration-300 ${showShadow ? 'shadow-md' : 'shadow-none'} shadow-md`}>
+        <nav className={`${path === '/search' ? 'absolute' : 'fixed'} top-0 left-0 w-full z-[100] h-16 md:h-20 px-4 md:px-12 bg-[#f2f2f2]/90 backdrop-blur-xl transition-shadow duration-300 ${showShadow ? 'shadow-md' : 'shadow-none'} shadow-md`}>
           <div className="max-w-7xl mx-auto h-full flex items-center justify-between">
             <NavbarContent
               isLanding={isLanding}
@@ -210,7 +210,7 @@ const NavbarContent = ({
   <div className="flex items-center justify-between w-full">
     {/* LOGO */}
     <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="relative z-10 shrink-0 flex items-center">
-      <img src={logo} alt="Arrivio" className="h-8 md:h-10 w-auto object-contain transition-all duration-500" />
+      <img src={logo} alt="Arrivio" className="h-10 md:h-10 w-auto object-contain transition-all duration-500" />
     </Link>
 
     {/* CENTER */}

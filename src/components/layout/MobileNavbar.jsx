@@ -52,7 +52,7 @@ const MobileNavbar = () => {
 
     return (
         <>
-            <div className={`md:hidden fixed left-0 right-0 z-[100] bg-[#f2f2f2] border-t border-[#e5e7eb] transition-transform duration-300 ${isVisible ? 'translate-y-0 bottom-0' : 'translate-y-full bottom-0'}`}>
+            <div data-mobile-nav className={`md:hidden fixed left-0 right-0 z-[100] bg-[#f2f2f2] border-t border-[#e5e7eb] transition-transform duration-300 ${isVisible ? 'translate-y-0 bottom-0' : 'translate-y-full bottom-0'}`}>
                 <div className="flex justify-around items-stretch">
                     {navItems.map((item) => {
                         const active = isActive(item);
@@ -67,21 +67,21 @@ const MobileNavbar = () => {
                                         if (!user) { openAuthModal(); return; }
                                         setIsNotifOpen(!isNotifOpen);
                                     }}
-                                    className={`relative flex flex-col items-center justify-center flex-1 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] transition-colors ${isNotifOpen ? "text-[#0f4c3a]" : "text-[#9ca3af]"}`}
+                                    className={`relative flex flex-col items-center justify-center flex-1 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors ${isNotifOpen ? "text-[#0f4c3a]" : "text-[#9ca3af]"}`}
                                 >
                                     <div className="relative">
-                                        <Icon size={28} strokeWidth={isNotifOpen ? 2.5 : 1.8} />
+                                        <Icon size={22} strokeWidth={isNotifOpen ? 2.5 : 1.8} />
                                         {item.badge > 0 && (
-                                            <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[20px] h-5 px-1 rounded-full bg-[#EA4335] text-[11px] font-bold text-white">
+                                            <span className="absolute -top-1 -right-1.5 flex items-center justify-center min-w-[16px] h-4 px-0.5 rounded-full bg-[#EA4335] text-[9px] font-bold text-white">
                                                 {item.badge > 9 ? '9+' : item.badge}
                                             </span>
                                         )}
                                     </div>
-                                    <span className={`text-[13px] mt-1 font-semibold ${isNotifOpen ? "text-[#0f4c3a]" : "text-[#9ca3af]"}`}>
+                                    <span className={`text-[10px] mt-0.5 font-medium ${isNotifOpen ? "text-[#0f4c3a]" : "text-[#9ca3af]"}`}>
                                         {item.label}
                                     </span>
                                     {isNotifOpen && (
-                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-[3px] bg-[#0f4c3a] rounded-full" />
+                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-[#0f4c3a] rounded-full" />
                                     )}
                                 </button>
                             );
@@ -98,21 +98,21 @@ const MobileNavbar = () => {
                                     }
                                     setIsNotifOpen(false);
                                 }}
-                                className={`relative flex flex-col items-center justify-center flex-1 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] transition-colors ${active ? "text-[#0f4c3a]" : "text-[#9ca3af]"}`}
+                                className={`relative flex flex-col items-center justify-center flex-1 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] transition-colors ${active ? "text-[#0f4c3a]" : "text-[#9ca3af]"}`}
                             >
                                 <div className="relative">
-                                    <Icon size={28} strokeWidth={active ? 2.5 : 1.8} />
+                                    <Icon size={22} strokeWidth={active ? 2.5 : 1.8} />
                                     {item.badge > 0 && (
-                                        <span className="absolute -top-2 -right-3 flex items-center justify-center min-w-[20px] h-5 px-1 rounded-full bg-[#EA4335] text-[11px] font-bold text-white">
+                                        <span className="absolute -top-1 -right-2 flex items-center justify-center min-w-[16px] h-4 px-0.5 rounded-full bg-[#EA4335] text-[9px] font-bold text-white">
                                             {item.badge > 9 ? '9+' : item.badge}
                                         </span>
                                     )}
                                 </div>
-                                <span className={`text-[13px] mt-1 font-semibold ${active ? "text-[#0f4c3a]" : "text-[#9ca3af]"}`}>
+                                <span className={`text-[10px] mt-0.5 font-medium ${active ? "text-[#0f4c3a]" : "text-[#9ca3af]"}`}>
                                     {item.label}
                                 </span>
                                 {active && (
-                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-[3px] bg-[#0f4c3a] rounded-full" />
+                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-[#0f4c3a] rounded-full" />
                                 )}
                             </Link>
                         );

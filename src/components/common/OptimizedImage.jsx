@@ -54,11 +54,14 @@ const OptimizedImage = ({
     }
   }, [src]);
 
-  const optimizedSrc = transformWidth
-    ? getOptimizedUrl(src, { width: transformWidth, quality })
-    : src;
+  // Normalize: handle gallery objects { url: "..." }
+  const rawSrc = (src && typeof src === "object" && src.url) ? src.url : src;
 
-  const srcSet = generateSrcSet(src, { quality });
+  const optimizedSrc = transformWidth
+    ? getOptimizedUrl(rawSrc, { width: transformWidth, quality })
+    : rawSrc;
+
+  const srcSet = generateSrcSet(rawSrc, { quality });
 
   const handleLoad = () => setLoaded(true);
 
