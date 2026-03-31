@@ -129,6 +129,12 @@
 
 
 
+/* Hide navbar & mobile nav when map is fullscreen on mobile */
+body.mobile-map-open nav,
+body.mobile-map-open [data-mobile-nav] {
+  display: none !important;
+}
+
 .price-pin {
   background: transparent;
   border: none;

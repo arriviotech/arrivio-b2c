@@ -115,24 +115,24 @@ const Profile = () => {
 
       {/* Mobile quick nav — hidden on desktop (sidebar handles it) */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar md:hidden">
-        <Link to="/profile/applications" className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e5e7eb] rounded-full text-[10px] font-bold text-[#374151] whitespace-nowrap shrink-0">
-          <ClipboardList size={12} className="text-[#9ca3af]" />
-          Applications {totalActiveApps > 0 && <span className="bg-[#0f4c3a] text-white text-[7px] font-bold min-w-[14px] h-[14px] px-1 flex items-center justify-center rounded-full">{totalActiveApps}</span>}
+        <Link to="/profile/applications" className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#e5e7eb] rounded-full text-xs font-bold text-[#374151] whitespace-nowrap shrink-0">
+          <ClipboardList size={14} className="text-[#9ca3af]" />
+          Applications {totalActiveApps > 0 && <span className="bg-[#0f4c3a] text-white text-[8px] font-bold min-w-[16px] h-[16px] px-1 flex items-center justify-center rounded-full">{totalActiveApps}</span>}
         </Link>
-        <Link to="/profile/bookings" className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e5e7eb] rounded-full text-[10px] font-bold text-[#374151] whitespace-nowrap shrink-0">
-          <Calendar size={12} className="text-[#9ca3af]" />
+        <Link to="/profile/bookings" className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#e5e7eb] rounded-full text-xs font-bold text-[#374151] whitespace-nowrap shrink-0">
+          <Calendar size={14} className="text-[#9ca3af]" />
           Bookings
         </Link>
-        <Link to="/profile/payments" className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e5e7eb] rounded-full text-[10px] font-bold text-[#374151] whitespace-nowrap shrink-0">
-          <CreditCard size={12} className="text-[#9ca3af]" />
+        <Link to="/profile/payments" className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#e5e7eb] rounded-full text-xs font-bold text-[#374151] whitespace-nowrap shrink-0">
+          <CreditCard size={14} className="text-[#9ca3af]" />
           Payments
         </Link>
-        <Link to="/profile/documents" className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e5e7eb] rounded-full text-[10px] font-bold text-[#374151] whitespace-nowrap shrink-0">
-          <FileText size={12} className="text-[#9ca3af]" />
+        <Link to="/profile/documents" className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#e5e7eb] rounded-full text-xs font-bold text-[#374151] whitespace-nowrap shrink-0">
+          <FileText size={14} className="text-[#9ca3af]" />
           Documents
         </Link>
-        <Link to="/profile/edit" className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e5e7eb] rounded-full text-[10px] font-bold text-[#374151] whitespace-nowrap shrink-0">
-          <User size={12} className="text-[#9ca3af]" />
+        <Link to="/profile/edit" className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#e5e7eb] rounded-full text-xs font-bold text-[#374151] whitespace-nowrap shrink-0">
+          <User size={14} className="text-[#9ca3af]" />
           Profile
         </Link>
       </div>
@@ -225,17 +225,17 @@ const Profile = () => {
               <>
                 {/* Applied date + status */}
                 {activeApplication.created_at && (
-                  <div className="px-4 pt-3 pb-0 flex items-center justify-between">
-                    <span className={`px-1.5 py-0.5 rounded-full text-[7px] font-bold uppercase shrink-0 ${STATUS_CONFIG[activeApplication.status]?.bg} ${STATUS_CONFIG[activeApplication.status]?.color}`}>
+                  <div className="px-5 pt-4 pb-0 flex items-center justify-between">
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase shrink-0 ${STATUS_CONFIG[activeApplication.status]?.bg} ${STATUS_CONFIG[activeApplication.status]?.color}`}>
                       {STATUS_CONFIG[activeApplication.status]?.label}
                     </span>
-                    <span className="text-[8px] text-[#9ca3af]">Applied {new Date(activeApplication.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    <span className="text-[10px] text-[#9ca3af]">Applied {new Date(activeApplication.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                   </div>
                 )}
 
                 {/* Top: thumbnail + info */}
-                <div className="flex gap-3 p-4 pt-2 pb-3">
-                  <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0">
+                <div className="flex gap-3.5 p-5 pt-3 pb-3">
+                  <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0">
                     {coverImage ? (
                       <img src={coverImage} alt={property.name} className="w-full h-full object-cover" />
                     ) : (
@@ -243,20 +243,20 @@ const Profile = () => {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-serif text-sm text-[#111827] truncate">{property.name}</h3>
-                    <p className="text-[9px] text-[#6b7280]">{unit.unit_type?.replace(/_/g, ' ')}{unit.unit_number ? ` · Unit ${unit.unit_number}` : ''}{property.city ? ` · ${property.city}` : ''}</p>
-                    <div className="flex items-center gap-1 mt-1.5 text-[9px] text-[#9ca3af] flex-wrap">
-                      <Calendar size={9} className="shrink-0" />
+                    <h3 className="font-serif text-base text-[#111827] truncate">{property.name}</h3>
+                    <p className="text-[11px] text-[#6b7280] mt-0.5">{unit.unit_type?.replace(/_/g, ' ')}{unit.unit_number ? ` · Unit ${unit.unit_number}` : ''}{property.city ? ` · ${property.city}` : ''}</p>
+                    <div className="flex items-center gap-1.5 mt-2 text-[11px] text-[#9ca3af] flex-wrap">
+                      <Calendar size={11} className="shrink-0" />
                       {activeApplication.move_in_date ? (
                         <span className="text-[#111827] font-medium">{new Date(activeApplication.move_in_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} → {new Date(activeApplication.move_out_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                       ) : <span>Dates TBD</span>}
-                      {rent && <span className="ml-auto text-xs font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>€{Math.round(rent / 100)}/mo</span>}
+                      {rent && <span className="ml-auto text-sm font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>€{Math.round(rent / 100)}/mo</span>}
                     </div>
                   </div>
                 </div>
 
                 {/* Timeline */}
-                <div className="px-4 pb-3">
+                <div className="px-5 pb-4">
                   <div className="flex items-center">
                     {STEP_ITEMS.map((step, i) => {
                       const isComplete = i < idx;
@@ -264,20 +264,20 @@ const Profile = () => {
                       const Icon = step.icon;
                       return (
                         <React.Fragment key={i}>
-                          <div className="flex flex-col items-center gap-0.5">
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                          <div className="flex flex-col items-center gap-1">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                               isComplete ? 'bg-[#22C55E]' : isCurrent ? 'bg-[#0f4c3a]' : 'bg-[#f2f2f2]'
                             }`}>
                               {isComplete ? (
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                               ) : (
-                                <Icon size={12} className={isCurrent ? 'text-white' : 'text-[#9ca3af]'} />
+                                <Icon size={14} className={isCurrent ? 'text-white' : 'text-[#9ca3af]'} />
                               )}
                             </div>
-                            <p className={`text-[7px] font-bold ${isCurrent ? 'text-[#0f4c3a]' : isComplete ? 'text-[#22C55E]' : 'text-[#9ca3af]'}`}>{step.label}</p>
+                            <p className={`text-[9px] font-bold ${isCurrent ? 'text-[#0f4c3a]' : isComplete ? 'text-[#22C55E]' : 'text-[#9ca3af]'}`}>{step.label}</p>
                           </div>
                           {i < STEP_ITEMS.length - 1 && (
-                            <div className={`flex-1 h-[2px] -mt-3.5 mx-0.5 ${isComplete ? 'bg-[#22C55E]' : 'bg-[#e5e7eb]'}`} />
+                            <div className={`flex-1 h-[2px] -mt-4 mx-0.5 ${isComplete ? 'bg-[#22C55E]' : 'bg-[#e5e7eb]'}`} />
                           )}
                         </React.Fragment>
                       );
@@ -286,8 +286,8 @@ const Profile = () => {
                 </div>
 
                 {/* CTA + info */}
-                <div className="px-4 pb-4">
-                  <button onClick={navigateToApp} className="w-full py-2.5 bg-[#0f4c3a] text-white rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#0a3a2b] transition-colors">
+                <div className="px-5 pb-5">
+                  <button onClick={navigateToApp} className="w-full py-3 bg-[#0f4c3a] text-white rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#0a3a2b] transition-colors">
                     {ctaLabel} <ArrowRight size={12} />
                   </button>
                   <div className="flex items-center justify-center gap-4 mt-2">

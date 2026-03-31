@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Instagram, Linkedin, Twitter, ArrowUpRight, Globe, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import logo1 from '../../assets/logo1.webp';
+import whitelogo from '../../assets/whitelogo.webp';
 import { useLanguage } from '../../context/LanguageContext';
 
 const Footer = () => {
@@ -36,7 +36,7 @@ const Footer = () => {
 
    return (
       // Background: Deep Forest Green (#1A2E22) for a bossy, grounded finish
-      <footer className="relative bg-[#1A2E22] pt-24 pb-12 px-6 md:px-12 overflow-hidden text-[#f2f2f2]">
+      <footer className="relative z-30 bg-[#1A2E22] pt-24 pb-12 px-6 md:px-12 overflow-hidden text-[#f2f2f2]">
 
          {/* 1. THE BRAND WATERMARK (Subtle & Premium) */}
          <div className="absolute bottom-[-10%] right-[-5%] font-serif text-[15rem] md:text-[25rem] opacity-[0.03] select-none pointer-events-none leading-none">
@@ -51,13 +51,12 @@ const Footer = () => {
                {/* Left: Brand & Newsletter */}
                <div className="lg:col-span-5">
                   <div className="mb-8">
-                     <div className="flex items-center gap-2 mb-4">
+                     <div className="mb-4">
                         <img
-                           src={logo1}
+                           src={whitelogo}
                            alt="Arrivio Logo"
-                           className="h-10 w-auto object-contain"
+                           className="h-14 w-auto object-contain"
                         />
-                        <h2 className="font-serif text-5xl">Arrivio.</h2>
                      </div>
                      <p className="font-sans text-[#f2f2f2]/60 text-lg max-w-sm leading-relaxed">
                         {t("footer.tagline")}

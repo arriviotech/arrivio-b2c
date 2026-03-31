@@ -114,6 +114,14 @@ const Search = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Hide navbar & bottom nav on mobile when map is open
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 1023px)');
+    if (!mql.matches) return;
+    document.body.classList.toggle('mobile-map-open', showMap);
+    return () => document.body.classList.remove('mobile-map-open');
+  }, [showMap]);
+
   // Local UI state
   const [hoveredId, setHoveredId] = useState(null);
 
@@ -184,7 +192,7 @@ const Search = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#f2f2f2] pt-20 flex flex-col relative">
+    <div className="min-h-screen w-full bg-[#f2f2f2] pt-16 md:pt-20 flex flex-col relative">
       <SEO title="Search Apartments" description="Browse furnished apartments and rooms across Germany. Filter by city, price, amenities, and move-in date." path="/search" />
 
       {/* ── STICKY CONTROL BAR ── */}
@@ -322,12 +330,23 @@ const Search = () => {
                   </section>
                 ) : (
                   <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center py-20"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white/50 rounded-3xl border border-[#f2f2f2] mt-4"
                   >
-                    <p className="text-xl font-serif text-[#4b5563] mb-2">No available units found</p>
-                    <p className="text-sm text-[#9ca3af]">Try adjusting your filters</p>
+                    <div className="w-16 h-16 bg-[#0f4c3a]/5 rounded-full flex items-center justify-center mb-6">
+                      <SearchIcon size={32} className="text-[#9ca3af]" />
+                    </div>
+                    <h3 className="text-xl font-serif font-bold text-[#111827] mb-2">No available units found</h3>
+                    <p className="text-[#4b5563] max-w-sm mb-8">
+                      We couldn't find any units matching your current filters. Try adjusting your search or resetting all filters.
+                    </p>
+                    <button
+                      onClick={resetFilters}
+                      className="px-8 py-3 bg-[#0f4c3a] text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
+                    >
+                      Reset all filters
+                    </button>
                   </motion.div>
                 )
               ) : (
@@ -428,17 +447,17 @@ const Search = () => {
             <div className={`sticky z-20 flex justify-center pointer-events-none transition-all duration-300 md:bottom-6 ${mobileNavVisible ? 'bottom-[88px]' : 'bottom-6'}`}>
               <button
                 onClick={handleToggleMap}
-                className="pointer-events-auto bg-[#0f4c3a] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 font-medium text-base sm:text-sm hover:bg-[#0a3a2b] transition-colors border border-white/10"
+                className="pointer-events-auto bg-[#0f4c3a] text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 font-bold text-xs sm:text-xs uppercase tracking-wider hover:bg-[#0a3a2b] transition-colors border border-white/10"
               >
                 {showMap ? (
                   <>
-                    <ListIcon size={16} />
-                    Show List
+                    <ListIcon size={14} />
+                    List
                   </>
                 ) : (
                   <>
-                    <MapIcon size={16} />
-                    Show Map
+                    <MapIcon size={14} />
+                    Map
                   </>
                 )}
               </button>
@@ -447,29 +466,65 @@ const Search = () => {
 
         </div>
 
-        {/* MAP CONTAINER */}
+        {/* MAP CONTAINER — mobile: fixed fullscreen, desktop: sticky sidebar */}
+        {showMap && (
+          <div className="hidden lg:block w-[38%] shrink-0">
+            <div className="sticky top-[80px] h-[calc(100vh-92px)] rounded-xl border border-[#e5e7eb] shadow-lg overflow-hidden">
+              <PropertyMap
+                properties={filteredProperties}
+                allProperties={properties}
+                hoveredId={hoveredId}
+                onSearchArea={handleMapSearchArea}
+                geoSearch={geoSearch}
+                setGeoSearch={setGeoSearch}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* MAP — mobile fullscreen overlay */}
         <div
-          className={`fixed inset-0 z-[60] pt-20 bg-[#f0f0f0] transition-transform duration-300 ease-in-out lg:fixed lg:top-[80px] lg:right-3 lg:bottom-3 lg:left-auto lg:w-[38%] lg:z-[25] lg:pt-0 lg:rounded-xl lg:border lg:border-[#e5e7eb] lg:shadow-lg overflow-hidden ${showMap
-            ? 'translate-y-0 lg:translate-x-0'
-            : 'translate-y-full lg:translate-x-full'
+          className={`fixed inset-0 z-[60] bg-[#f0f0f0] transition-transform duration-300 ease-in-out lg:hidden overflow-hidden flex flex-col ${showMap
+            ? 'translate-y-0'
+            : 'translate-y-full'
             }`}
         >
-          {/* MOBILE CLOSE BUTTON */}
-          <button
-            onClick={handleToggleMap}
-            className="absolute top-24 right-6 z-[110] bg-white p-3 rounded-full shadow-xl border border-black/5 lg:hidden text-[#111827] active:scale-95 transition-transform"
-          >
-            <CloseIcon size={20} />
-          </button>
+          {/* Search bar on top of map (mobile only) */}
+          <div className="shrink-0">
+            <SearchControlBar
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              onSearch={performGeoSearch}
+              filters={filters}
+              setFilters={setFilters}
+              onOpenFilters={handleOpenFilters}
+              onReset={resetFilters}
+            />
+          </div>
 
-          <PropertyMap
-            properties={filteredProperties}
-            allProperties={properties}
-            hoveredId={hoveredId}
-            onSearchArea={handleMapSearchArea}
-            geoSearch={geoSearch}
-            setGeoSearch={setGeoSearch}
-          />
+          {/* Map fills remaining space */}
+          <div className="flex-1 relative">
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[110]">
+              <button
+                onClick={handleToggleMap}
+                className="bg-[#0f4c3a] text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider active:scale-95 transition-transform border border-white/10"
+              >
+                <ListIcon size={14} />
+                List
+              </button>
+            </div>
+
+            <PropertyMap
+              properties={filteredProperties}
+              allProperties={properties}
+              hoveredId={hoveredId}
+              onSearchArea={handleMapSearchArea}
+              geoSearch={geoSearch}
+              setGeoSearch={setGeoSearch}
+            />
+          </div>
         </div>
 
       </div>
