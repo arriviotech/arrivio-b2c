@@ -18,71 +18,59 @@ import {
   Waves,
   UserCheck,
 } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 // YOUR IMAGES
-import room850 from "../../assets/room850.png";
-import room950 from "../../assets/room950.png";
-import room1200 from "../../assets/room1200.png";
-
-const featureIcons = {
-  "Private Furnished Bedroom": Bed,
-  "High-Speed WiFi Included": Wifi,
-  "Community Events Access": Users,
-  "Bi-Weekly Cleaning": Sparkles,
-  "Private Ensuite Bathroom": Bath,
-  "King-Size Bed": Bed,
-  "Shared Designer Kitchen": Utensils,
-  "Private Kitchenette": Utensils,
-  "Dedicated Workspace": Monitor,
-  "Priority Maintenance": Wrench,
-  "City View or Balcony": Building2,
-  "Smart Home Integration": Camera,
-  "Floor-to-Ceiling Windows": Columns,
-  "In-Unit Washer/Dryer": Waves,
-  "Concierge Service": UserCheck,
-};
+import room850 from "../../assets/room850.webp";
+import room950 from "../../assets/room950.webp";
+import room1200 from "../../assets/room1200.webp";
 
 const PricingTiersSection = () => {
+  const { t } = useLanguage();
+
   const pricingTiers = [
     {
       id: 1,
-      name: "The Essential",
+      name: t("collection.essential"),
+      priceLabel: t("collection.essentialPrice"),
       minPrice: 350,
       maxPrice: 600,
       features: [
-        "Private Furnished Bedroom",
-        "Shared Designer Kitchen",
-        "Bi-Weekly Cleaning",
-        "High-Speed WiFi Included",
-        "Community Events Access",
+        { label: t("collection.privateBedroom"), icon: Bed },
+        { label: t("collection.sharedKitchen"), icon: Utensils },
+        { label: t("collection.biWeeklyCleaning"), icon: Sparkles },
+        { label: t("collection.wifiIncluded"), icon: Wifi },
+        { label: t("collection.communityEvents"), icon: Users },
       ],
       image: room850,
     },
     {
       id: 2,
-      name: "The Comfort",
+      name: t("collection.comfort"),
+      priceLabel: t("collection.comfortPrice"),
       minPrice: 600,
       maxPrice: 850,
       features: [
-        "Private Ensuite Bathroom",
-        "City View or Balcony",
-        "Smart Home Integration",
-        "Dedicated Workspace",
-        "Priority Maintenance",
+        { label: t("collection.privateEnsuite"), icon: Bath },
+        { label: t("collection.cityView"), icon: Building2 },
+        { label: t("collection.smartHome"), icon: Camera },
+        { label: t("collection.dedicatedWorkspace"), icon: Monitor },
+        { label: t("collection.priorityMaintenance"), icon: Wrench },
       ],
       image: room950,
     },
     {
       id: 3,
-      name: "The Studio",
+      name: t("collection.studio"),
+      priceLabel: t("collection.studioPrice"),
       minPrice: 850,
       maxPrice: 1200,
       features: [
-        "Private Kitchenette",
-        "King-Size Bed",
-        "Floor-to-Ceiling Windows",
-        "In-Unit Washer/Dryer",
-        "Concierge Service",
+        { label: t("collection.privateKitchenette"), icon: Utensils },
+        { label: t("collection.kingSizeBed"), icon: Bed },
+        { label: t("collection.floorWindows"), icon: Columns },
+        { label: t("collection.inUnitWasher"), icon: Waves },
+        { label: t("collection.concierge"), icon: UserCheck },
       ],
       image: room1200,
     },
@@ -125,7 +113,7 @@ const PricingTiersSection = () => {
           >
             <div className="w-8 h-[1px] bg-[#0f4c3a]"></div>
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#111827] font-sans">
-              The Collection
+              {t("collection.label")}
             </span>
             <div className="w-8 h-[1px] bg-[#0f4c3a]"></div>
           </motion.div>
@@ -137,8 +125,8 @@ const PricingTiersSection = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="font-serif text-4xl md:text-5xl lg:text-6xl text-[#1A1A1A] leading-tight"
           >
-            Spaces for <br />
-            <span className="italic text-[#111827]">Living Well.</span>
+            {t("collection.title1")} <br />
+            <span className="italic text-[#111827]">{t("collection.title2")}</span>
           </motion.h2>
         </div>
 
@@ -168,6 +156,8 @@ const PricingTiersSection = () => {
                     src={tier.image}
                     alt={tier.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-[#0f4c3a] mix-blend-multiply opacity-10 transition-opacity group-hover:opacity-0"></div>
 
@@ -183,7 +173,7 @@ const PricingTiersSection = () => {
                   <div className="mb-6">
                     <div className="flex items-baseline justify-center gap-1 text-[#111827]">
                       <span className="font-serif text-3xl sm:text-4xl md:text-5xl">
-                        €{tier.minPrice}–{tier.maxPrice}
+                        {tier.priceLabel}
                       </span>
                       <span className="font-sans text-sm text-[#5C5C50] font-medium">
                         / month
@@ -195,7 +185,7 @@ const PricingTiersSection = () => {
                   {/* FEATURES */}
                   <ul className="space-y-3 mb-8 text-left mx-auto w-full max-w-[90%]">
                     {tier.features.map((feature, index) => {
-                      const Icon = featureIcons[feature] || CheckCircle;
+                      const Icon = feature.icon || CheckCircle;
 
                       return (
                         <li key={index} className="flex items-start gap-3">
@@ -204,7 +194,7 @@ const PricingTiersSection = () => {
                             className="text-[#9ca3af] flex-shrink-0 mt-0.5 group-hover:text-[#111827] transition-colors"
                           />
                           <span className="font-sans text-sm text-[#5C5C50] group-hover:text-[#1A1A1A] transition-colors">
-                            {feature}
+                            {feature.label}
                           </span>
                         </li>
                       );
@@ -224,7 +214,7 @@ const PricingTiersSection = () => {
                       className="block"
                     >
                       <button className="w-full h-14 bg-[#f2f2f2] border border-[#0f4c3a]/10 rounded-full font-sans font-bold text-xs uppercase tracking-[0.2em] text-[#111827] flex items-center justify-center gap-2 hover:bg-[#0f4c3a] hover:text-[#f2f2f2] transition-all duration-300 shadow-sm group-hover:shadow-md">
-                        View Details
+                        {t("collection.viewDetails")}
                         <ArrowRight size={14} />
                       </button>
                     </Link>

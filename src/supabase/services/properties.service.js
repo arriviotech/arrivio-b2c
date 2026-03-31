@@ -128,7 +128,8 @@ export async function getProperties() {
         alt_text,
         caption,
         is_primary,
-        display_order
+        display_order,
+        unit_id
       ),
       units (
         id,
@@ -187,7 +188,8 @@ export async function getPropertyBySlug(slug) {
         alt_text,
         caption,
         is_primary,
-        display_order
+        display_order,
+        unit_id
       ),
       units (
         id,

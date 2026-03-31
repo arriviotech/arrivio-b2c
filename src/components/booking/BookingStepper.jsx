@@ -1,61 +1,61 @@
 import React from "react";
-import { Check } from "lucide-react";
+import { Check, FileText, CreditCard, ClipboardList, PenTool } from "lucide-react";
 
-/**
- * BookingStepper - A horizontal stepper component for the booking flow
- */
-const BookingStepper = ({ currentStep = 2, bgClass = "bg-[#FDF9F6]" }) => {
-    const steps = [
-        { id: 1, label: "Log in or sign up" },
-        { id: 2, label: "Verify identity" },
-        { id: 3, label: "Pay advance" },
-        { id: 4, label: "Sign contract" },
-    ];
+const BookingStepper = ({ currentStep = 1 }) => {
+  const steps = [
+    { id: 1, label: "Review", icon: FileText },
+    { id: 2, label: "Pay deposit", icon: CreditCard },
+    { id: 3, label: "Application", icon: ClipboardList },
+    { id: 4, label: "Sign lease", icon: PenTool },
+  ];
 
-    return (
-        <div className="w-full py-2">
-            <div className="relative flex justify-between items-start">
-                {/* Background Line */}
-                <div className="absolute top-5 left-6 right-6 h-[1px] bg-[#0f4c3a]/10 -z-0" />
+  return (
+    <div className="w-full">
+      {/* Line behind circles */}
+      <div className="relative flex items-start justify-between">
+        {/* Background track */}
+        <div className="absolute top-[22px] left-[22px] right-[22px] h-[2px] bg-[#e5e7eb]" />
+        {/* Progress fill */}
+        <div
+          className="absolute top-[22px] left-[22px] h-[2px] bg-[#0f4c3a] transition-all duration-500"
+          style={{ width: `calc(${((Math.min(currentStep, steps.length) - 1) / (steps.length - 1)) * 100}% - 44px * ${(Math.min(currentStep, steps.length) - 1) / (steps.length - 1)})` }}
+        />
 
-                {/* Progress Line */}
-                <div
-                    className="absolute top-5 left-6 h-[1px] bg-[#0f4c3a] transition-all duration-500 -z-0"
-                    style={{ width: `calc(${((currentStep - 1) / (steps.length - 1)) * 100}% - 3rem + 12px)` }}
-                />
+        {steps.map((step) => {
+          const isCompleted = step.id < currentStep;
+          const isActive = step.id === currentStep;
+          const Icon = step.icon;
 
-                {steps.map((step) => {
-                    const isCompleted = step.id < currentStep;
-                    const isActive = step.id === currentStep;
-
-                    return (
-                        <div key={step.id} className={`relative flex flex-col items-center gap-3 z-10 px-2 ${bgClass}`}>
-                            {/* Circle Wrapper with masking background */}
-                            <div className={`p-1 ${bgClass} rounded-full`}>
-                                <div
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 border ${isCompleted
-                                        ? "bg-[#0f4c3a] border-[#0f4c3a] text-white"
-                                        : isActive
-                                            ? "bg-white border-[#0f4c3a] text-[#111827] shadow-md scale-110"
-                                            : "bg-white border-[#0f4c3a]/10 text-[#111827]/30"
-                                        }`}
-                                >
-                                    {isCompleted ? <Check size={18} /> : step.id}
-                                </div>
-                            </div>
-
-                            <span
-                                className={`text-[9px] font-bold tracking-tight transition-colors duration-300 text-center max-w-[70px] leading-tight ${isActive || isCompleted ? "text-[#111827]" : "text-[#111827]/30"
-                                    }`}
-                            >
-                                {step.label}
-                            </span>
-                        </div>
-                    );
-                })}
+          return (
+            <div key={step.id} className="flex flex-col items-center gap-2 relative z-10">
+              <div
+                className={`w-11 h-11 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                  isCompleted
+                    ? "bg-[#0f4c3a] text-white"
+                    : isActive
+                    ? "bg-white border-2 border-[#0f4c3a] text-[#0f4c3a] shadow-sm"
+                    : "bg-[#f2f2f2] text-[#9ca3af] border border-[#e5e7eb]"
+                }`}
+              >
+                {isCompleted ? <Check size={18} /> : <Icon size={18} />}
+              </div>
+              <span
+                className={`text-[10px] font-bold uppercase tracking-wider text-center leading-tight max-w-[80px] ${
+                  isActive
+                    ? "text-[#0f4c3a]"
+                    : isCompleted
+                    ? "text-[#111827]"
+                    : "text-[#9ca3af]"
+                }`}
+              >
+                {step.label}
+              </span>
             </div>
-        </div>
-    );
+          );
+        })}
+      </div>
+    </div>
+  );
 };
 
 export default BookingStepper;

@@ -1,7 +1,6 @@
 
 
 import React, { useState, useCallback, useRef, useMemo } from "react";
-import { motion } from "framer-motion";
 import {
     Heart,
     ChevronLeft,
@@ -12,6 +11,8 @@ import {
     Sofa
 } from "lucide-react";
 import { useWishlist } from "../../context/WishlistContext";
+import OptimizedImage from "../common/OptimizedImage";
+import { CARD_SIZES } from "../../utils/imageUtils";
 
 const PropertyCard = ({ property, activeTab, onClick, onMouseEnter, onMouseLeave, children, compact }) => {
     const { toggleWishlist, isInWishlist } = useWishlist();
@@ -90,12 +91,10 @@ const PropertyCard = ({ property, activeTab, onClick, onMouseEnter, onMouseLeave
           <div className={`absolute inset-0 bg-[#EAE6DF] rounded-[16px] border border-[#d9d5ce] shadow-sm ${compact ? 'mt-[8px] ml-[8px]' : 'mt-[12px] ml-[12px]'}`} />
           {/* Stack layer 1 — middle */}
           <div className={`absolute inset-0 bg-[#F0ECE6] rounded-[16px] border border-[#e0dcd6] shadow-sm ${compact ? 'mt-[4px] ml-[4px] mr-[4px] mb-[4px]' : 'mt-[6px] ml-[6px] mr-[6px] mb-[6px]'}`} />
-        <motion.div
+        <div
             onClick={onClick}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
-            whileHover={{ boxShadow: "0 8px 20px rgba(0,0,0,0.06)" }}
-            transition={{ duration: 0.3 }}
             className="cursor-pointer bg-white rounded-[16px] overflow-hidden border border-[#f2f2f2] hover:border-[#0f4c3a]/20 flex flex-col group/card relative h-full"
         >
             {/* 1. IMAGE CAROUSEL */}
@@ -107,12 +106,14 @@ const PropertyCard = ({ property, activeTab, onClick, onMouseEnter, onMouseLeave
                     className="w-full h-full flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth"
                 >
                     {images.map((img, idx) => (
-                        <img
+                        <OptimizedImage
                             key={idx}
                             src={img}
                             alt={property.title}
-                            className="w-full h-full object-cover flex-shrink-0 snap-center group-hover/card:scale-105 transition-transform duration-500"
-                            loading="lazy"
+                            width={640}
+                            sizes={CARD_SIZES}
+                            className="w-full h-full flex-shrink-0 snap-center"
+                            imgClassName="w-full h-full object-cover"
                         />
                     ))}
                 </div>
@@ -227,7 +228,7 @@ const PropertyCard = ({ property, activeTab, onClick, onMouseEnter, onMouseLeave
                 </div>
             </div>
             {children}
-        </motion.div>
+        </div>
         </div>
     );
 };

@@ -2,36 +2,39 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Search, FileCheck, Home, Heart, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 
 // --- YOUR IMAGE IMPORTS ---
 import journeyImg1 from '../../assets/journeyImg1.webp';
 import journeyImg2 from '../../assets/journeyImg2.webp';
 
 const JourneySection = () => {
+   const { t } = useLanguage();
+
    const steps = [
       {
          number: '01',
          icon: Search,
-         title: 'Explore',
-         description: "Browse our curated collection of community spaces designed for life wherever you choose to land.",
+         title: t("journey.explore"),
+         description: t("journey.exploreDesc"),
       },
       {
          number: '02',
          icon: FileCheck,
-         title: 'Apply',
-         description: 'Complete a simple 10-minute application. No credit checks, no complicated paperwork.',
+         title: t("journey.apply"),
+         description: t("journey.applyDesc"),
       },
       {
          number: '03',
          icon: Home,
-         title: 'Move In',
-         description: 'Receive your keys and step into your fully furnished, ready-to-live space.',
+         title: t("journey.moveIn"),
+         description: t("journey.moveInDesc"),
       },
       {
          number: '04',
          icon: Heart,
-         title: 'Thrive',
-         description: 'Join community events, build connections, and start your new chapter with ease.',
+         title: t("journey.thrive"),
+         description: t("journey.thriveDesc"),
       },
    ];
 
@@ -59,7 +62,7 @@ const JourneySection = () => {
                         <div className="w-8 h-[1px] bg-[#0f4c3a]"></div>
 
                         <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#111827] font-sans">
-                           The Process
+                           {t("journey.label")}
                         </span>
 
                         {/* Right Line (Visible on Mobile, Hidden on Desktop 'lg:hidden') */}
@@ -67,8 +70,8 @@ const JourneySection = () => {
                      </div>
 
                      <h2 className="font-serif text-4xl sm:text-5xl lg:text-6xl text-[#1A1A1A] leading-tight">
-                        Your journey to <br />
-                        <span className="italic text-[#111827]">belonging.</span>
+                        {t("journey.title1")} <br />
+                        <span className="italic text-[#111827]">{t("journey.title2")}</span>
                      </h2>
                   </motion.div>
 
@@ -124,7 +127,7 @@ const JourneySection = () => {
                   >
                      <Link to="/search">
                         <button className="h-14 px-8 bg-[#0f4c3a] text-[#f2f2f2] rounded-full font-sans font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-[#1A1A1A] hover:scale-105 transition-all shadow-xl">
-                           Start Exploring
+                           {t("journey.startExploring")}
                            <ArrowRight size={16} />
                         </button>
                      </Link>
@@ -142,11 +145,11 @@ const JourneySection = () => {
                      transition={{ duration: 0.8 }}
                      className="absolute top-0 right-0 w-[80%] h-[60%] rounded-[2rem] overflow-hidden shadow-xl border-4 border-[#f0f0f0] z-10"
                   >
-                     <img src={journeyImg2} alt="Interior space" className="w-full h-full object-cover grayscale-[10%]" />
+                     <img src={journeyImg2} alt="Interior space" className="w-full h-full object-cover grayscale-[10%]" loading="lazy" decoding="async" />
                      <div className="absolute inset-0 bg-[#0f4c3a] mix-blend-multiply opacity-20"></div>
                      <div className="absolute top-6 right-6 bg-[#f0f0f0]/90 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 shadow-sm">
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#111827]">Move-in Ready</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#111827]">{t("journey.moveInReady")}</span>
                      </div>
                   </motion.div>
 
@@ -157,7 +160,7 @@ const JourneySection = () => {
                      transition={{ duration: 0.8, delay: 0.2 }}
                      className="absolute bottom-0 left-0 w-[80%] h-[60%] rounded-[2rem] overflow-hidden shadow-2xl border-4 border-[#f0f0f0] z-20"
                   >
-                     <img src={journeyImg1} alt="Interior space" className="w-full h-full object-cover" />
+                     <img src={journeyImg1} alt="Interior space" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                      <div className="absolute inset-0 bg-[#0f4c3a] mix-blend-multiply opacity-10"></div>
 
                   </motion.div>

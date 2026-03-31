@@ -96,7 +96,10 @@ const QUICK_DURATIONS = [
 
 const formatDate = (date) => {
     if (!date) return null;
-    return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = MONTHS_LIST[date.getMonth()];
+    const y = date.getFullYear();
+    return `${d} ${m} ${y}`;
 };
 
 const getDurationText = (start, end) => {
@@ -113,15 +116,27 @@ const getDurationText = (start, end) => {
     return parts.length > 0 ? parts.join(' ') : '0 days';
 };
 
-const HeroDatePicker = ({ startDate, endDate, onDatesChange, onClose }) => {
+const addMonths = (date, months) => {
+    const d = new Date(date);
+    d.setMonth(d.getMonth() + months);
+    return d;
+};
+
+const HeroDatePicker = ({ startDate, endDate, onDatesChange, onClose, minStayMonths = 0, initialField = 'start' }) => {
     const [localStart, setLocalStart] = useState(startDate);
     const [localEnd, setLocalEnd] = useState(endDate);
     const [hoverDate, setHoverDate] = useState(null);
-    const [activeField, setActiveField] = useState('start');
+    const [activeField, setActiveField] = useState(startDate && initialField === 'end' ? 'end' : 'start');
+    const [calendarStartDate, setCalendarStartDate] = useState(
+        startDate && initialField === 'end' && minStayMonths > 0 ? addMonths(startDate, minStayMonths) : null
+    );
     const containerRef = useRef(null);
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
 
     const today = new Date(new Date().setHours(0, 0, 0, 0));
+
+    // Min move-out date based on min stay
+    const minEndDate = localStart && minStayMonths > 0 ? addMonths(localStart, minStayMonths) : null;
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -143,16 +158,60 @@ const HeroDatePicker = ({ startDate, endDate, onDatesChange, onClose }) => {
 
     const handleDateChange = (dates) => {
         const [start, end] = dates;
-        setLocalStart(start);
-        setLocalEnd(end);
-        if (start && !end) setActiveField('end');
+
+        if (activeField === 'end' && localStart) {
+            // Move-out field is active — user is picking an end date
+            // react-datepicker gives [clickedDate, null] when clicking a single date
+            const clickedDate = end || start;
+
+            if (minStayMonths > 0) {
+                const minEnd = addMonths(localStart, minStayMonths);
+                if (clickedDate >= minEnd) {
+                    // Valid: beyond min stay — update move-out only
+                    setLocalEnd(clickedDate);
+                }
+                // If before min stay, ignore the click
+            } else {
+                if (clickedDate > localStart) {
+                    setLocalEnd(clickedDate);
+                }
+            }
+        } else {
+            // Move-in field is active or no dates set — picking a start date
+            setLocalStart(start);
+            if (start && minStayMonths > 0) {
+                const minEnd = addMonths(start, minStayMonths);
+                if (localEnd && localEnd >= minEnd) {
+                    // Keep existing move-out if still valid
+                    setCalendarStartDate(localEnd);
+                } else {
+                    // Set to minimum
+                    setLocalEnd(minEnd);
+                    setCalendarStartDate(minEnd);
+                }
+            } else {
+                if (localEnd && localEnd > start) {
+                    // Keep existing move-out if still after new start
+                } else {
+                    setLocalEnd(null);
+                }
+            }
+            setActiveField('end');
+        }
     };
 
     const handleQuickDuration = (days) => {
         const start = localStart || today;
         const end = new Date(start.getTime() + days * 24 * 60 * 60 * 1000);
-        setLocalStart(start);
-        setLocalEnd(end);
+        // Enforce min stay
+        if (minStayMonths > 0) {
+            const minEnd = addMonths(start, minStayMonths);
+            setLocalStart(start);
+            setLocalEnd(end < minEnd ? minEnd : end);
+        } else {
+            setLocalStart(start);
+            setLocalEnd(end);
+        }
         setActiveField('end');
     };
 
@@ -164,6 +223,7 @@ const HeroDatePicker = ({ startDate, endDate, onDatesChange, onClose }) => {
     const handleClear = () => {
         setLocalStart(null);
         setLocalEnd(null);
+        setCalendarStartDate(null);
         setActiveField('start');
     };
 
@@ -173,7 +233,7 @@ const HeroDatePicker = ({ startDate, endDate, onDatesChange, onClose }) => {
     const headerContent = (
         <>
             {/* Close row */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2">
                 <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#9ca3af]">Select dates</p>
                 <button
                     onClick={handleClose}
@@ -183,18 +243,31 @@ const HeroDatePicker = ({ startDate, endDate, onDatesChange, onClose }) => {
                 </button>
             </div>
 
+            {/* Min stay notice */}
+            {minStayMonths > 0 && (
+                <p className="text-[10px] font-bold text-[#0f4c3a] bg-[#0f4c3a]/5 rounded-lg px-3 py-1.5 mb-3 inline-flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0f4c3a]" />
+                    Minimum stay: {minStayMonths} month{minStayMonths !== 1 ? 's' : ''}
+                </p>
+            )}
+            {minStayMonths > 0 && (
+                <p className="text-[10px] text-[#4b5563] bg-[#FEF3C7] border border-[#F59E0B]/20 rounded-lg px-3 py-1.5 mb-2 leading-relaxed">
+                    The first <span className="font-bold">{minStayMonths} month{minStayMonths !== 1 ? 's' : ''}</span> will be locked as part of the minimum stay. Select your move-out date beyond this period — keep an eye on the month!
+                </p>
+            )}
+
             {/* Move-in / Move-out pills */}
-            <div className="flex items-center gap-2.5 mb-3">
+            <div className="flex items-center gap-2.5 mb-2">
                 <button
                     onClick={() => { setActiveField('start'); }}
-                    className={`flex-1 relative px-4 py-3 rounded-xl border-2 transition-all duration-200 text-left ${
+                    className={`flex-1 relative px-3 py-2 rounded-xl border-2 transition-all duration-200 text-left ${
                         activeField === 'start'
                             ? 'border-[#0f4c3a] bg-[#0f4c3a]/[0.06] shadow-sm'
                             : 'border-[#d1d5db] bg-white hover:border-[#9ca3af]'
                     }`}
                 >
-                    <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#9ca3af] leading-none mb-1">Move-in</p>
-                    <p className={`text-[14px] font-semibold leading-tight ${localStart ? 'text-[#111827]' : 'text-[#6b7280]'}`}>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#9ca3af] leading-none mb-0.5">Move-in</p>
+                    <p className={`text-[13px] font-semibold leading-tight ${localStart ? 'text-[#111827]' : 'text-[#6b7280]'}`}>
                         {formatDate(localStart) || 'Pick a date'}
                     </p>
                     {activeField === 'start' && (
@@ -205,15 +278,20 @@ const HeroDatePicker = ({ startDate, endDate, onDatesChange, onClose }) => {
                 <ArrowRight size={16} className="text-[#6b7280] shrink-0" />
 
                 <button
-                    onClick={() => { if (localStart) setActiveField('end'); }}
-                    className={`flex-1 relative px-4 py-3 rounded-xl border-2 transition-all duration-200 text-left ${
+                    onClick={() => {
+                        if (localStart) {
+                            setActiveField('end');
+                            if (minEndDate) setCalendarStartDate(minEndDate);
+                        }
+                    }}
+                    className={`flex-1 relative px-3 py-2 rounded-xl border-2 transition-all duration-200 text-left ${
                         activeField === 'end'
                             ? 'border-[#0f4c3a] bg-[#0f4c3a]/[0.06] shadow-sm'
                             : 'border-[#d1d5db] bg-white hover:border-[#9ca3af]'
                     } ${!localStart ? 'opacity-40 cursor-not-allowed' : ''}`}
                 >
-                    <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#9ca3af] leading-none mb-1">Move-out</p>
-                    <p className={`text-[14px] font-semibold leading-tight ${localEnd ? 'text-[#111827]' : 'text-[#6b7280]'}`}>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#9ca3af] leading-none mb-0.5">Move-out</p>
+                    <p className={`text-[13px] font-semibold leading-tight ${localEnd ? 'text-[#111827]' : 'text-[#6b7280]'}`}>
                         {formatDate(localEnd) || 'Pick a date'}
                     </p>
                     {activeField === 'end' && localStart && (
@@ -225,7 +303,10 @@ const HeroDatePicker = ({ startDate, endDate, onDatesChange, onClose }) => {
             {/* Quick durations */}
             <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#b0b5bc] mr-0.5">Stay:</span>
-                {QUICK_DURATIONS.map(({ label, days }) => (
+                {QUICK_DURATIONS.filter(({ days }) => {
+                    if (minStayMonths <= 0) return true;
+                    return days >= minStayMonths * 30;
+                }).map(({ label, days }) => (
                     <button
                         key={days}
                         onClick={() => handleQuickDuration(days)}
@@ -262,8 +343,43 @@ const HeroDatePicker = ({ startDate, endDate, onDatesChange, onClose }) => {
         </div>
     );
 
+    // When in end mode, handle single date selection for move-out
+    const handleEndDateSelect = (date) => {
+        if (!localStart) return;
+        if (minStayMonths > 0) {
+            const minEnd = addMonths(localStart, minStayMonths);
+            if (date >= minEnd) setLocalEnd(date);
+        } else {
+            if (date > localStart) setLocalEnd(date);
+        }
+    };
+
     // ── Calendar props (shared) ──
-    const calendarProps = {
+    const isEndMode = activeField === 'end' && localStart;
+
+    const calendarProps = isEndMode ? {
+        // Move-out mode: single date select for end
+        selected: localEnd,
+        onChange: handleEndDateSelect,
+        startDate: localStart,
+        endDate: localEnd,
+        selectsEnd: true,
+        inline: true,
+        minDate: minEndDate || localStart,
+        ...(calendarStartDate ? { openToDate: calendarStartDate } : {}),
+        onDayMouseEnter: (date) => setHoverDate(date),
+        onDayMouseLeave: () => setHoverDate(null),
+        renderCustomHeader: (props) => <CustomHeader {...props} />,
+        calendarClassName: "border-none font-sans",
+        dayClassName: (date) => {
+            if (date < today) return "hero-dp-past";
+            if (localStart && minEndDate && date > localStart && date < minEndDate) {
+                return "hero-dp-min-stay-locked";
+            }
+            return "hero-dp-day";
+        },
+    } : {
+        // Move-in mode: range select
         selected: localStart,
         onChange: handleDateChange,
         startDate: localStart,
@@ -271,11 +387,18 @@ const HeroDatePicker = ({ startDate, endDate, onDatesChange, onClose }) => {
         selectsRange: true,
         inline: true,
         minDate: today,
+        ...(calendarStartDate ? { openToDate: calendarStartDate } : {}),
         onDayMouseEnter: (date) => setHoverDate(date),
         onDayMouseLeave: () => setHoverDate(null),
         renderCustomHeader: (props) => <CustomHeader {...props} />,
         calendarClassName: "border-none font-sans",
-        dayClassName: (date) => date < today ? "hero-dp-past" : "hero-dp-day",
+        dayClassName: (date) => {
+            if (date < today) return "hero-dp-past";
+            if (localStart && minEndDate && date > localStart && date < minEndDate) {
+                return "hero-dp-min-stay-locked";
+            }
+            return "hero-dp-day";
+        },
     };
 
     const content = (
@@ -339,12 +462,12 @@ const HeroDatePicker = ({ startDate, endDate, onDatesChange, onClose }) => {
                     onMouseDown={(e) => e.stopPropagation()}
                 >
                     {/* Header */}
-                    <div className="px-6 pt-4 pb-4 bg-gradient-to-b from-[#fafafa] to-white">
+                    <div className="px-6 pt-3 pb-2 bg-gradient-to-b from-[#fafafa] to-white">
                         {headerContent}
                     </div>
 
                     {/* Calendar */}
-                    <div className="px-4 py-2 flex justify-center border-t border-[#f0f0f0]">
+                    <div className="px-4 py-1 flex justify-center border-t border-[#f0f0f0]">
                         <div className="hero-datepicker-wrapper">
                             <DatePicker
                                 {...calendarProps}
@@ -354,7 +477,7 @@ const HeroDatePicker = ({ startDate, endDate, onDatesChange, onClose }) => {
                     </div>
 
                     {/* Footer */}
-                    <div className="px-6 py-4 border-t border-[#f0f0f0] bg-[#fafafa]">
+                    <div className="px-6 py-3 border-t border-[#f0f0f0] bg-[#fafafa]">
                         {footerContent}
                     </div>
                 </motion.div>
@@ -476,6 +599,16 @@ const HeroDatePicker = ({ startDate, endDate, onDatesChange, onClose }) => {
                 /* Hide duplicate nav arrows between months */
                 .hero-datepicker-wrapper .react-datepicker__month-container:first-of-type .hero-dp-next { visibility: hidden !important; }
                 .hero-datepicker-wrapper .react-datepicker__month-container:last-of-type .hero-dp-prev { visibility: hidden !important; }
+
+                /* Min stay locked dates — shown as selected range */
+                .hero-datepicker-wrapper .hero-dp-min-stay-locked {
+                    background-color: rgba(15, 76, 58, 0.10) !important;
+                    color: #0f4c3a !important;
+                    border-radius: 0 !important;
+                    pointer-events: none !important;
+                    cursor: default !important;
+                    font-weight: 600 !important;
+                }
 
                 /* Today highlight */
                 .hero-datepicker-wrapper .react-datepicker__day--today {

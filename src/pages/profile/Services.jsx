@@ -27,6 +27,7 @@ const Services = () => {
   const [view, setView] = useState(initialView);
   const [category, setCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [orderFilter, setOrderFilter] = useState('active');
 
   const filtered = category === 'all'
     ? addons
@@ -151,35 +152,76 @@ const Services = () => {
       )}
 
       {/* ── ORDERS VIEW ── */}
-      {view === 'orders' && (
-        <>
-          {ordersLoading ? (
-            <div className="flex justify-center py-16">
-              <Loader2 size={24} className="animate-spin text-[#9ca3af]" />
-            </div>
-          ) : orders.length > 0 ? (
-            <div className="bg-white rounded-2xl border border-[#e5e7eb] overflow-hidden divide-y divide-[#e5e7eb]">
-              {orders.map((order, i) => (
-                <OrderCard key={order.id} order={order} index={i} />
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl border border-[#e5e7eb] p-8 text-center">
-              <div className="w-14 h-14 rounded-full bg-[#0f4c3a]/5 flex items-center justify-center mx-auto mb-3">
-                <ShoppingBag size={22} className="text-[#9ca3af]" />
+      {view === 'orders' && (() => {
+        const activeOrders = orders.filter(o => ['pending', 'confirmed'].includes(o.status));
+        const deliveredOrders = orders.filter(o => o.status === 'delivered');
+        const cancelledOrders = orders.filter(o => o.status === 'cancelled');
+
+        const ORDER_FILTERS = [
+          { key: 'active', label: 'Active', count: activeOrders.length },
+          { key: 'delivered', label: 'Delivered', count: deliveredOrders.length },
+          { key: 'cancelled', label: 'Cancelled', count: cancelledOrders.length },
+        ];
+
+        const filteredOrders =
+          orderFilter === 'active' ? activeOrders :
+          orderFilter === 'delivered' ? deliveredOrders :
+          orderFilter === 'cancelled' ? cancelledOrders :
+          activeOrders;
+
+        return (
+          <>
+            {/* Filter Pills */}
+            {orders.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto no-scrollbar mb-5">
+                {ORDER_FILTERS.map(f => (
+                  <button
+                    key={f.key}
+                    onClick={() => setOrderFilter(f.key)}
+                    className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-colors whitespace-nowrap ${
+                      orderFilter === f.key
+                        ? 'bg-[#111827] text-white'
+                        : 'bg-white border border-[#e5e7eb] text-[#374151] hover:border-[#0f4c3a]/30'
+                    }`}
+                  >
+                    {f.label}{f.count > 0 ? ` (${f.count})` : ''}
+                  </button>
+                ))}
               </div>
-              <p className="text-sm font-bold text-[#111827] mb-1">No orders yet</p>
-              <p className="text-xs text-[#6b7280] mb-4">Browse our services and request what you need.</p>
-              <button
-                onClick={() => setView('browse')}
-                className="px-5 py-2.5 bg-[#0f4c3a] hover:bg-[#0a3a2b] text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-colors"
-              >
-                Browse Services
-              </button>
-            </div>
-          )}
-        </>
-      )}
+            )}
+
+            {ordersLoading ? (
+              <div className="flex justify-center py-16">
+                <Loader2 size={24} className="animate-spin text-[#9ca3af]" />
+              </div>
+            ) : filteredOrders.length > 0 ? (
+              <div className="bg-white rounded-2xl border border-[#e5e7eb] overflow-hidden divide-y divide-[#e5e7eb]">
+                {filteredOrders.map((order, i) => (
+                  <OrderCard key={order.id} order={order} index={i} onCancel={() => refetchOrders()} />
+                ))}
+              </div>
+            ) : orders.length > 0 ? (
+              <div className="bg-white rounded-2xl border border-[#e5e7eb] p-8 text-center">
+                <p className="text-sm text-[#9ca3af]">No {orderFilter} orders</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-[#e5e7eb] p-8 text-center">
+                <div className="w-14 h-14 rounded-full bg-[#0f4c3a]/5 flex items-center justify-center mx-auto mb-3">
+                  <ShoppingBag size={22} className="text-[#9ca3af]" />
+                </div>
+                <p className="text-sm font-bold text-[#111827] mb-1">No orders yet</p>
+                <p className="text-xs text-[#6b7280] mb-4">Browse our services and request what you need.</p>
+                <button
+                  onClick={() => setView('browse')}
+                  className="px-5 py-2.5 bg-[#0f4c3a] hover:bg-[#0a3a2b] text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-colors"
+                >
+                  Browse Services
+                </button>
+              </div>
+            )}
+          </>
+        );
+      })()}
     </div>
   );
 };

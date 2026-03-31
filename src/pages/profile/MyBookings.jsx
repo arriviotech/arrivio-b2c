@@ -1,505 +1,189 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  Calendar, MapPin, Home, ArrowRight, Search,
-  CheckCircle, Clock, CreditCard, FileText, AlertCircle,
-  ChevronRight, XCircle
-} from 'lucide-react';
+import { Calendar, Home, ArrowRight, Loader2, Search } from 'lucide-react';
 import { supabase } from '../../supabase/client';
 import { useAuth } from '../../context/AuthContext';
-import toast from 'react-hot-toast';
-import MyBookingsSkeleton from '../../components/skeletons/MyBookingsSkeleton';
+import OptimizedImage from '../../components/common/OptimizedImage';
+import { THUMBNAIL_SIZES } from '../../utils/imageUtils';
 
-const BOOKING_STATUS = {
-  active: { label: 'Active', bg: 'bg-[#22C55E]/10', text: 'text-[#16a34a]' },
-  confirmed: { label: 'Confirmed', bg: 'bg-[#22C55E]/10', text: 'text-[#16a34a]' },
-  pending_signature: { label: 'Pending Signature', bg: 'bg-amber-50', text: 'text-amber-500' },
-  pending_payment: { label: 'Pending Payment', bg: 'bg-amber-50', text: 'text-amber-500' },
-  completed: { label: 'Completed', bg: 'bg-[#f2f2f2]', text: 'text-[#6b7280]' },
-  cancelled: { label: 'Cancelled', bg: 'bg-red-50', text: 'text-[#EA4335]' },
-};
-
-const APP_STATUS = {
-  pending_payment: { label: 'Pay Deposit', step: 1 },
-  pending_profile: { label: 'Upload Docs', step: 2 },
-  pending_signature: { label: 'Sign Agreement', step: 3 },
-  pending_approval: { label: 'Under Review', step: 4 },
-  under_review: { label: 'Under Review', step: 4 },
-  approved: { label: 'Approved', step: 5 },
-  rejected: { label: 'Rejected', step: -1 },
-  withdrawn: { label: 'Withdrawn', step: -1 },
+const STATUS_CONFIG = {
+  active: { label: 'Active', color: 'text-[#22C55E]', bg: 'bg-[#22C55E]/10' },
+  confirmed: { label: 'Confirmed', color: 'text-[#22C55E]', bg: 'bg-[#22C55E]/10' },
+  completed: { label: 'Completed', color: 'text-[#6b7280]', bg: 'bg-[#f2f2f2]' },
+  cancelled: { label: 'Cancelled', color: 'text-[#6b7280]', bg: 'bg-[#f2f2f2]' },
 };
 
 const MyBookings = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
-  const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('all');
+  const [filter, setFilter] = useState('active');
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (!user) return;
-    const fetchData = async () => {
+    const fetch = async () => {
       try {
-        const [bookingsRes, appsRes] = await Promise.all([
-          supabase
-            .from('bookings')
-            .select(`id, status, move_in_date, move_out_date, monthly_rent_cents, created_at,
-              units!unit_id ( unit_number, unit_type, slug, property_id,
-                properties ( name, slug, city, district )
-              )`)
-            .eq('profile_id', user.id)
-            .order('created_at', { ascending: false }),
-
-          supabase
-            .from('applications')
-            .select(`id, status, move_in_date, move_out_date, tenant_type, created_at,
-              units!unit_id ( unit_number, unit_type, slug, property_id,
-                properties ( name, slug, city, district )
-              )`)
-            .eq('profile_id', user.id)
-            .order('created_at', { ascending: false }),
-        ]);
-
-        if (bookingsRes.data) setBookings(bookingsRes.data);
-        if (appsRes.data) setApplications(appsRes.data);
-      } catch (err) {
-        console.error('Error fetching bookings:', err);
+        const { data } = await supabase
+          .from('bookings')
+          .select(`id, status, move_in_date, move_out_date, monthly_rent_cents, created_at,
+            units!unit_id ( id, unit_number, unit_type,
+              properties ( id, name, slug, city, property_photos ( storage_path, is_primary, display_order ) ) )`)
+          .eq('profile_id', user.id)
+          .order('created_at', { ascending: false });
+        setBookings(data || []);
+      } catch (e) {
+        console.error('Fetch error:', e);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+    fetch();
   }, [user]);
 
-  const handleWithdraw = async (applicationId) => {
-    try {
-      const { error } = await supabase
-        .from('applications')
-        .update({ status: 'withdrawn' })
-        .eq('id', applicationId)
-        .eq('profile_id', user.id);
-
-      if (error) throw error;
-
-      // Update local state
-      setApplications(prev =>
-        prev.map(a => a.id === applicationId ? { ...a, status: 'withdrawn' } : a)
-      );
-      toast.success('Application withdrawn. Your deposit refund will be processed.');
-    } catch (err) {
-      console.error('Withdraw error:', err);
-      toast.error('Failed to withdraw. Please try again.');
-    }
-  };
-
   if (loading) {
-    return <MyBookingsSkeleton />;
+    return <div className="flex items-center justify-center py-20"><Loader2 size={24} className="animate-spin text-[#9ca3af]" /></div>;
   }
 
-  const activeBookings = bookings.filter(b => ['active', 'confirmed', 'pending_signature', 'pending_payment'].includes(b.status));
-  const pastBookings = bookings.filter(b => ['completed', 'cancelled'].includes(b.status));
-  const activeApps = applications.filter(a => ['pending_payment', 'pending_profile', 'pending_signature', 'pending_approval', 'under_review'].includes(a.status));
-  const pastApps = applications.filter(a => ['approved', 'rejected', 'withdrawn'].includes(a.status));
+  const active = bookings.filter(b => ['active', 'confirmed'].includes(b.status));
+  const past = bookings.filter(b => ['completed', 'cancelled'].includes(b.status));
 
-  const isEmpty = bookings.length === 0 && applications.length === 0;
+  const filtered = filter === 'active' ? active :
+    filter === 'past' ? past : active;
 
-  const TABS = [
-    { key: 'all', label: 'All' },
-    { key: 'active', label: 'Active', count: activeBookings.length + activeApps.length },
-    { key: 'past', label: 'Past', count: pastBookings.length + pastApps.length },
+  const FILTERS = [
+    { key: 'active', label: 'Active', count: active.length },
+    { key: 'past', label: 'Past', count: past.length },
   ];
 
   return (
-    <div>
-      <h2 className="text-xl font-serif text-[#111827] mb-6">My Bookings</h2>
+    <div className="space-y-5">
+      <div>
+        <h1 className="text-2xl font-serif text-[#111827] mb-1">My Bookings</h1>
+        <p className="text-sm text-[#6b7280]">Your confirmed stays and rental history</p>
+      </div>
 
-      {isEmpty ? (
-        <div className="bg-white rounded-2xl border border-[#e5e7eb] p-8 text-center">
-          <div className="w-16 h-16 rounded-full bg-[#0f4c3a]/5 flex items-center justify-center mx-auto mb-4">
-            <Home size={28} className="text-[#9ca3af]" />
-          </div>
-          <h3 className="font-serif text-lg text-[#111827] mb-2">No Bookings Yet</h3>
-          <p className="text-sm text-[#6b7280] mb-6 max-w-sm mx-auto">
-            Start exploring our furnished units and find your perfect home in Germany.
-          </p>
-          <Link to="/search" className="inline-flex items-center gap-2 px-6 py-3 bg-[#0f4c3a] text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#0a3a2b] transition-colors">
-            Browse Units <ArrowRight size={14} />
-          </Link>
+      {/* Filter pills */}
+      {bookings.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+          {FILTERS.map(f => (
+            <button
+              key={f.key}
+              onClick={() => { setFilter(f.key); setCurrentPage(1); }}
+              className={`px-3.5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
+                filter === f.key
+                  ? 'bg-[#0f4c3a] text-white'
+                  : 'bg-white border border-[#e5e7eb] text-[#4b5563] hover:border-[#0f4c3a]/30'
+              }`}
+            >
+              {f.label} {f.count > 0 && <span className={filter === f.key ? 'text-white/60' : 'text-[#9ca3af]'}>({f.count})</span>}
+            </button>
+          ))}
         </div>
-      ) : (
-        <div className="space-y-5">
+      )}
 
-          {/* Tabs */}
-          <div className="flex gap-2">
-            {TABS.map(t => (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-colors ${
-                  tab === t.key
-                    ? 'bg-[#0f4c3a] text-white'
-                    : 'bg-white border border-[#e5e7eb] text-[#374151] hover:border-[#0f4c3a]/30'
-                }`}
-              >
-                {t.label} {t.count !== undefined ? `(${t.count})` : `(${bookings.length + applications.length})`}
-              </button>
-            ))}
+      {bookings.length === 0 && (
+        <div className="bg-white rounded-2xl border border-[#e5e7eb] p-8 text-center">
+          <div className="w-14 h-14 rounded-full bg-[#0f4c3a]/5 flex items-center justify-center mx-auto mb-4">
+            <Home size={24} className="text-[#9ca3af]" />
+          </div>
+          <h3 className="font-serif text-lg text-[#111827] mb-2">No bookings yet</h3>
+          <p className="text-xs text-[#6b7280] mb-5 max-w-xs mx-auto">Your confirmed stays will appear here once your application is approved. Start by browsing our available apartments.</p>
+          <div className="flex items-center justify-center gap-3">
+            <button onClick={() => navigate('/search')} className="px-6 py-3 bg-[#0f4c3a] text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#0a3a2b] transition-colors inline-flex items-center gap-2">
+              Browse Stays <ArrowRight size={12} />
+            </button>
+            <button onClick={() => navigate('/profile/applications')} className="px-5 py-3 bg-white border border-[#e5e7eb] text-[#4b5563] rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#f9f9f7] transition-colors">
+              View Applications
+            </button>
+          </div>
+        </div>
+      )}
+
+      {filtered.length > 0 && (() => {
+        const ITEMS_PER_PAGE = 5;
+        const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+        const paginatedBookings = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+        return (
+        <div>
+          <div className="space-y-3">
+            {paginatedBookings.map(b => {
+              const unit = b.units || {};
+              const property = unit.properties || {};
+              const photos = (property.property_photos || []).sort((a, b2) => a.display_order - b2.display_order);
+              const coverImage = photos.find(p => p.is_primary)?.storage_path || photos[0]?.storage_path;
+              const statusConfig = STATUS_CONFIG[b.status] || {};
+
+              const isActive = ['active', 'confirmed'].includes(b.status);
+              return (
+                <motion.div key={b.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                  className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${isActive ? 'border-[#22C55E]/15' : 'border-[#e5e7eb] opacity-60'}`}
+                >
+                  <div className="flex gap-3 p-4">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-[#f2f2f2]">
+                      {coverImage && <OptimizedImage src={coverImage} alt={property.name} width={80} sizes={THUMBNAIL_SIZES} className="w-full h-full" imgClassName="w-full h-full object-cover" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="font-serif text-sm text-[#111827] truncate">{property.name}</h3>
+                        <span className={`px-1.5 py-0.5 rounded-full text-[7px] font-bold uppercase shrink-0 ${statusConfig.bg} ${statusConfig.color}`}>{statusConfig.label}</span>
+                      </div>
+                      <p className="text-[9px] text-[#6b7280]">{unit.unit_type?.replace(/_/g, ' ')}{unit.unit_number ? ` · Unit ${unit.unit_number}` : ''}{property.city ? ` · ${property.city}` : ''}</p>
+                      <div className="flex items-center justify-between mt-1.5">
+                        <div className="flex items-center gap-1 text-[9px] text-[#9ca3af]">
+                          <Calendar size={9} />
+                          <span className="text-[#111827] font-medium">
+                            {new Date(b.move_in_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} → {new Date(b.move_out_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                        </div>
+                        <span className="text-xs font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>€{Math.round(b.monthly_rent_cents / 100)}/mo</span>
+                      </div>
+                    </div>
+                  </div>
+                  {isActive && (
+                    <div className="px-4 pb-3 flex gap-2">
+                      <Link to={`/profile/bookings/${b.id}`} className="flex-1 py-2.5 bg-[#f2f2f2] hover:bg-[#e5e5e5] rounded-xl text-[10px] font-bold uppercase tracking-widest text-center text-[#374151] transition-colors">View Booking</Link>
+                      <Link to="/profile/payments" className="flex-1 py-2.5 bg-[#0f4c3a] hover:bg-[#0a3a2b] text-white rounded-xl text-[10px] font-bold uppercase tracking-widest text-center transition-colors">Pay Rent</Link>
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
 
-          {/* Active Bookings */}
-          {(tab === 'all' || tab === 'active') && activeBookings.length > 0 && (
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#9ca3af] mb-3 px-1">Active Bookings</p>
-              <div className="space-y-3">
-                {activeBookings.map((booking, i) => (
-                  <BookingCard key={booking.id} booking={booking} index={i} />
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-5">
+              <p className="text-[11px] text-[#9ca3af]">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length} bookings
+              </p>
+              <div className="flex items-center gap-1">
+                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+                  className="w-8 h-8 rounded-lg border border-[#e5e7eb] flex items-center justify-center text-[#374151] hover:bg-[#f7f7f7] disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs">‹</button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button key={page} onClick={() => setCurrentPage(page)}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-colors ${currentPage === page ? 'bg-[#0f4c3a] text-white' : 'border border-[#e5e7eb] text-[#374151] hover:bg-[#f7f7f7]'}`}
+                  >{page}</button>
                 ))}
+                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+                  className="w-8 h-8 rounded-lg border border-[#e5e7eb] flex items-center justify-center text-[#374151] hover:bg-[#f7f7f7] disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs">›</button>
               </div>
             </div>
           )}
+        </div>
+        );
+      })()}
 
-          {/* Active Applications */}
-          {(tab === 'all' || tab === 'active') && activeApps.length > 0 && (
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#9ca3af] mb-3 px-1">Applications In Progress</p>
-              <div className="space-y-3">
-                {activeApps.map((app, i) => (
-                  <ApplicationCard key={app.id} app={app} index={i} navigate={navigate} onWithdraw={handleWithdraw} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Past Bookings */}
-          {(tab === 'all' || tab === 'past') && pastBookings.length > 0 && (
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#9ca3af] mb-3 px-1">Past Bookings</p>
-              <div className="space-y-3">
-                {pastBookings.map((booking, i) => (
-                  <BookingCard key={booking.id} booking={booking} index={i} past />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Past Applications */}
-          {(tab === 'all' || tab === 'past') && pastApps.length > 0 && (
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#9ca3af] mb-3 px-1">Past Applications</p>
-              <div className="space-y-3">
-                {pastApps.map((app, i) => (
-                  <ApplicationCard key={app.id} app={app} index={i} navigate={navigate} onWithdraw={handleWithdraw} past />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Empty filtered state */}
-          {tab === 'active' && activeBookings.length === 0 && activeApps.length === 0 && (
-            <div className="text-center py-10">
-              <p className="text-sm text-[#9ca3af]">No active bookings or applications</p>
-            </div>
-          )}
-          {tab === 'past' && pastBookings.length === 0 && pastApps.length === 0 && (
-            <div className="text-center py-10">
-              <p className="text-sm text-[#9ca3af]">No past bookings</p>
-            </div>
-          )}
+      {/* Empty filter state */}
+      {bookings.length > 0 && filtered.length === 0 && (
+        <div className="bg-white rounded-2xl border border-[#e5e7eb] p-6 text-center">
+          <p className="text-sm text-[#6b7280]">No bookings match this filter</p>
         </div>
       )}
     </div>
-  );
-};
-
-/* ──── Booking Card ──── */
-const BookingCard = ({ booking, index, past }) => {
-  const unit = booking.units || {};
-  const property = unit.properties || {};
-  const status = BOOKING_STATUS[booking.status] || BOOKING_STATUS.active;
-  const rent = Math.round((booking.monthly_rent_cents || 0) / 100);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      className={`bg-white rounded-xl border border-[#e5e7eb] overflow-hidden hover:shadow-sm transition-shadow ${past ? 'opacity-75' : ''}`}
-    >
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-sm font-bold text-[#111827] truncate">{property.name || 'Property'}</h3>
-              <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider ${status.bg} ${status.text}`}>
-                {status.label}
-              </span>
-            </div>
-            <p className="text-[11px] text-[#6b7280]">
-              {unit.unit_type?.replace(/_/g, ' ')} · Unit {unit.unit_number} · {property.city}
-            </p>
-          </div>
-          <div className="text-right shrink-0 ml-3">
-            <p className="text-base font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>€{rent}</p>
-            <p className="text-[9px] text-[#9ca3af]">/month</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 text-[11px] text-[#6b7280] mb-3">
-          <span className="flex items-center gap-1"><Calendar size={11} /> {booking.move_in_date}</span>
-          <span className="text-[#d1d5db]">→</span>
-          <span className="flex items-center gap-1"><Calendar size={11} /> {booking.move_out_date}</span>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <Link
-            to={`/profile/bookings/${booking.id}`}
-            className="flex-1 min-w-[100px] py-2 bg-[#f2f2f2] hover:bg-[#e5e5e5] rounded-lg text-[10px] font-bold uppercase tracking-widest text-center text-[#374151] transition-colors"
-          >
-            View Details
-          </Link>
-          {unit.property_id && (
-            <Link
-              to={`/profile/payments?property=${unit.property_id}`}
-              className="flex-1 py-2 bg-white border border-[#e5e7eb] hover:border-[#0f4c3a]/30 rounded-lg text-[10px] font-bold uppercase tracking-widest text-center text-[#374151] transition-colors flex items-center justify-center gap-1"
-            >
-              <CreditCard size={11} /> Payments
-            </Link>
-          )}
-          {!past && (
-            <Link
-              to="/profile/payments"
-              className="flex-1 py-2 bg-[#0f4c3a] hover:bg-[#0a3a2b] rounded-lg text-[10px] font-bold uppercase tracking-widest text-center text-white transition-colors"
-            >
-              Pay Rent
-            </Link>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-/* ──── Application Steps Config ──── */
-const APP_STEPS = [
-  { key: "pending_payment", label: "Pay Deposit", icon: CreditCard, desc: "Pay holding deposit to secure your unit" },
-  { key: "pending_profile", label: "Upload Docs", icon: FileText, desc: "Upload passport, contract & ID" },
-  { key: "pending_signature", label: "Sign Agreement", icon: FileText, desc: "Sign rental agreement via DocuSign" },
-  { key: "pending_approval", label: "Review", icon: Clock, desc: "Our team reviews your application" },
-  { key: "approved", label: "Approved", icon: CheckCircle, desc: "Booking confirmed!" },
-];
-
-/* ──── Application Card ──── */
-const ApplicationCard = ({ app, index, navigate, past, onWithdraw }) => {
-  const unit = app.units || {};
-  const property = unit.properties || {};
-  const isApproved = app.status === 'approved';
-  const isRejected = app.status === 'rejected';
-  const isWithdrawn = app.status === 'withdrawn';
-  const currentStepIdx = APP_STEPS.findIndex(s => s.key === app.status);
-  const activeIdx = app.status === 'under_review' ? 3 : currentStepIdx;
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [withdrawing, setWithdrawing] = useState(false);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      className={`bg-white rounded-xl border border-[#e5e7eb] overflow-hidden hover:shadow-sm transition-shadow ${past ? 'opacity-75' : ''}`}
-    >
-      <div className="p-4">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-bold text-[#111827] truncate mb-0.5">{property.name || 'Property'}</h3>
-            <p className="text-[11px] text-[#6b7280]">
-              {unit.unit_type?.replace(/_/g, ' ')} · {property.city} · {app.tenant_type}
-            </p>
-          </div>
-          <span className="text-[10px] text-[#9ca3af] shrink-0 ml-2">
-            {new Date(app.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-          </span>
-        </div>
-
-        {/* Step Progress — only for active */}
-        {!past && !isRejected && !isWithdrawn && activeIdx >= 0 && (
-          <div className="mb-4">
-            <div className="flex items-center gap-1 mb-3">
-              {APP_STEPS.map((step, i) => (
-                <div key={step.key} className={`flex-1 h-1.5 rounded-full ${
-                  i < activeIdx ? 'bg-[#22C55E]' : i === activeIdx ? 'bg-[#0f4c3a]' : 'bg-[#e5e7eb]'
-                }`} />
-              ))}
-            </div>
-
-            {/* Step Icons + Labels */}
-            <div className="flex justify-between mb-3">
-              {APP_STEPS.map((step, i) => {
-                const StepIcon = step.icon;
-                const isComplete = i < activeIdx;
-                const isCurrent = i === activeIdx;
-                return (
-                  <div key={step.key} className="flex flex-col items-center" style={{ width: `${100 / APP_STEPS.length}%` }}>
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center mb-1 ${
-                      isComplete ? 'bg-[#22C55E] text-white' :
-                      isCurrent ? 'bg-[#0f4c3a] text-white' :
-                      'bg-[#e5e7eb] text-[#9ca3af]'
-                    }`}>
-                      {isComplete ? <CheckCircle size={12} /> : <StepIcon size={12} />}
-                    </div>
-                    <span className={`text-[8px] font-bold uppercase tracking-wider text-center leading-tight ${
-                      isCurrent ? 'text-[#0f4c3a]' : isComplete ? 'text-[#16a34a]' : 'text-[#9ca3af]'
-                    }`}>
-                      {step.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Current Step Info */}
-            {activeIdx >= 0 && activeIdx < APP_STEPS.length && (
-              <div className="p-2.5 bg-[#f7f7f7] rounded-lg flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-[#0f4c3a] text-white flex items-center justify-center shrink-0">
-                  {React.createElement(APP_STEPS[activeIdx].icon, { size: 11 })}
-                </div>
-                <p className="text-[11px] text-[#374151]">
-                  <span className="font-bold">Next: </span>{APP_STEPS[activeIdx].desc}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Dates */}
-        <div className="flex items-center gap-3 text-[11px] text-[#6b7280] mb-3">
-          <span className="flex items-center gap-1"><Calendar size={11} /> {app.move_in_date}</span>
-          <span className="text-[#d1d5db]">→</span>
-          <span className="flex items-center gap-1"><Calendar size={11} /> {app.move_out_date}</span>
-        </div>
-
-        {/* CTA */}
-        {!past && !isRejected && !isWithdrawn && (
-          <div className="space-y-2">
-            <button
-              onClick={() => navigate("/application/details")}
-              className="w-full py-2.5 bg-[#0f4c3a] hover:bg-[#0a3a2b] rounded-lg text-[10px] font-bold uppercase tracking-widest text-white text-center transition-colors flex items-center justify-center gap-2"
-            >
-              Continue Application <ArrowRight size={12} />
-            </button>
-
-            {!showConfirm ? (
-              <button
-                onClick={() => setShowConfirm(true)}
-                className="w-full py-2 text-[10px] font-bold uppercase tracking-widest text-[#9ca3af] hover:text-[#EA4335] transition-colors text-center"
-              >
-                Withdraw Application
-              </button>
-            ) : (
-              <div className="p-3 bg-red-50 border border-red-100 rounded-lg">
-                <p className="text-xs text-[#EA4335] font-medium mb-3">
-                  Are you sure? Your holding deposit will be refunded within 1-2 business days.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowConfirm(false)}
-                    className="flex-1 py-2 bg-white border border-[#e5e7eb] rounded-lg text-[10px] font-bold uppercase tracking-widest text-[#374151] hover:bg-[#f7f7f7] transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={async () => {
-                      setWithdrawing(true);
-                      await onWithdraw(app.id);
-                      setWithdrawing(false);
-                    }}
-                    disabled={withdrawing}
-                    className="flex-1 py-2 bg-[#EA4335] rounded-lg text-[10px] font-bold uppercase tracking-widest text-white hover:bg-[#d33426] transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
-                  >
-                    {withdrawing ? 'Withdrawing...' : <><XCircle size={12} /> Confirm Withdraw</>}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Approved — application completed, booking should exist */}
-        {isApproved && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 py-2.5 px-3 bg-[#22C55E]/10 rounded-lg">
-              <CheckCircle size={14} className="text-[#16a34a] shrink-0" />
-              <span className="text-[11px] text-[#16a34a] font-medium">Application approved. Booking created.</span>
-            </div>
-            <div className="flex gap-2">
-              <Link to="/profile/payments" className="flex-1 py-2 bg-[#f2f2f2] hover:bg-[#e5e5e5] rounded-lg text-[10px] font-bold uppercase tracking-widest text-center text-[#374151] transition-colors flex items-center justify-center gap-1">
-                <CreditCard size={11} /> Payments
-              </Link>
-              {unit.slug ? (
-                <Link to={`/unit/${unit.slug}`} className="flex-1 py-2 bg-[#0f4c3a] hover:bg-[#0a3a2b] rounded-lg text-[10px] font-bold uppercase tracking-widest text-center text-white transition-colors">
-                  View Unit
-                </Link>
-              ) : (
-                <Link to="/profile/bookings" className="flex-1 py-2 bg-[#0f4c3a] hover:bg-[#0a3a2b] rounded-lg text-[10px] font-bold uppercase tracking-widest text-center text-white transition-colors">
-                  View Bookings
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Rejected */}
-        {isRejected && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 py-2.5 px-3 bg-red-50 rounded-lg">
-              <XCircle size={14} className="text-[#EA4335] shrink-0" />
-              <span className="text-[11px] text-[#EA4335] font-medium">Application was rejected. Refund initiated within 1-2 business days.</span>
-            </div>
-            <div className="flex gap-2">
-              <Link to="/profile/payments" className="flex-1 py-2 bg-[#f2f2f2] hover:bg-[#e5e5e5] rounded-lg text-[10px] font-bold uppercase tracking-widest text-center text-[#374151] transition-colors flex items-center justify-center gap-1">
-                <CreditCard size={11} /> Payments
-              </Link>
-              {unit.slug ? (
-                <Link to={`/unit/${unit.slug}`} className="flex-1 py-2 bg-[#0f4c3a] hover:bg-[#0a3a2b] rounded-lg text-[10px] font-bold uppercase tracking-widest text-center text-white transition-colors">
-                  View Unit
-                </Link>
-              ) : (
-                <Link to="/search" className="flex-1 py-2 bg-[#0f4c3a] hover:bg-[#0a3a2b] rounded-lg text-[10px] font-bold uppercase tracking-widest text-center text-white transition-colors">
-                  Browse Units
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Withdrawn */}
-        {isWithdrawn && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 py-2.5 px-3 bg-[#f2f2f2] rounded-lg">
-              <AlertCircle size={14} className="text-[#6b7280] shrink-0" />
-              <span className="text-[11px] text-[#6b7280] font-medium">You withdrew this application.</span>
-            </div>
-            <div className="flex gap-2">
-              <Link to="/profile/payments" className="flex-1 py-2 bg-[#f2f2f2] hover:bg-[#e5e5e5] rounded-lg text-[10px] font-bold uppercase tracking-widest text-center text-[#374151] transition-colors flex items-center justify-center gap-1">
-                <CreditCard size={11} /> Payments
-              </Link>
-              {unit.slug ? (
-                <Link to={`/unit/${unit.slug}`} className="flex-1 py-2 bg-[#0f4c3a] hover:bg-[#0a3a2b] rounded-lg text-[10px] font-bold uppercase tracking-widest text-center text-white transition-colors">
-                  View Unit
-                </Link>
-              ) : (
-                <Link to="/search" className="flex-1 py-2 bg-[#0f4c3a] hover:bg-[#0a3a2b] rounded-lg text-[10px] font-bold uppercase tracking-widest text-center text-white transition-colors">
-                  Browse Units
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    </motion.div>
   );
 };
 

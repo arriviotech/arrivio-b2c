@@ -53,7 +53,7 @@ const CameraModal = ({ onClose, onConfirm }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4">
+        <div className="fixed inset-0 z-[200] bg-black/90 flex flex-col items-center justify-center p-4">
             <div className="relative w-full max-w-md bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10">
                 {error ? (
                     <div className="p-8 text-center text-white">

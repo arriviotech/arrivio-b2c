@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import SEO from '../components/common/SEO';
 
 // ✅ SEARCH BAR
 import CitySearch from '../components/CitySearch/CitySearch';
@@ -69,6 +70,7 @@ const CityGridPage = () => {
 
     return (
         <div className="min-h-screen w-full bg-[#f2f2f2] px-4 md:px-12 pt-28 pb-12 flex flex-col">
+            <SEO title="Cities" description="Explore furnished apartments in Berlin, Munich, Frankfurt, Cologne, and more German cities." path="/cities" />
 
             {/* --- HEADER SECTION --- */}
             <div className="flex flex-col items-center justify-center mb-10 border-b border-[#1A1A1A]/10 pb-8">

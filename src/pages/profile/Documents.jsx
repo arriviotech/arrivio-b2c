@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   FileText, Download, CheckCircle, Clock, XCircle,
-  AlertTriangle, Loader2, Home, Calendar
+  AlertTriangle, Loader2, Home, Calendar, ArrowRight
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getMyDocuments, getDocumentUrl, getDocTypeLabel } from "../../supabase/services/documents.service";
 import toast from "react-hot-toast";
@@ -24,6 +25,7 @@ const EXPECTED_DOCS = [
 
 const Documents = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(null);
@@ -155,10 +157,13 @@ const Documents = () => {
           <div className="w-14 h-14 rounded-full bg-[#0f4c3a]/5 flex items-center justify-center mx-auto mb-4">
             <FileText size={24} className="text-[#9ca3af]" />
           </div>
-          <h3 className="text-sm font-bold text-[#111827] mb-1">No documents yet</h3>
-          <p className="text-xs text-[#6b7280] mb-6 max-w-sm mx-auto">
-            Documents will appear here once you start an application and upload your files.
+          <h3 className="font-serif text-lg text-[#111827] mb-2">No documents yet</h3>
+          <p className="text-xs text-[#6b7280] mb-5 max-w-xs mx-auto">
+            Your uploaded documents will appear here. Start by browsing stays and completing an application.
           </p>
+          <button onClick={() => navigate('/search')} className="px-6 py-3 bg-[#0f4c3a] text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#0a3a2b] transition-colors inline-flex items-center gap-2">
+            Browse Stays <ArrowRight size={12} />
+          </button>
         </div>
       )}
 

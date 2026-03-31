@@ -25,6 +25,7 @@ const BookingReview = React.lazy(() => import("../pages/booking/BookingReview"))
 const BookingSuccess = React.lazy(() => import("../pages/booking/BookingSuccess"));
 const PaymentPage = React.lazy(() => import("../pages/booking/PaymentPage"));
 const Paid = React.lazy(() => import("../pages/booking/Paid"));
+const SignLease = React.lazy(() => import("../pages/booking/SignLease"));
 
 // Main App
 const CityGridPage = React.lazy(() => import("../pages/CityGridPage"));
@@ -34,6 +35,7 @@ const UnitDetails = React.lazy(() => import("../pages/UnitDetails"));
 import Profile from "../pages/Profile";
 import DashboardLayout from "../components/profile/DashboardLayout";
 import EditProfile from "../pages/profile/EditProfile";
+import MyApplications from "../pages/profile/MyApplications";
 import MyBookings from "../pages/profile/MyBookings";
 import MyPayments from "../pages/profile/MyPayments";
 import Help from "../pages/profile/Help";
@@ -41,6 +43,8 @@ import Documents from "../pages/profile/Documents";
 import Community from "../pages/profile/Community";
 import Services from "../pages/profile/Services";
 import BookingDetail from "../pages/profile/BookingDetail";
+import SettingsPage from "../pages/profile/SettingsPage";
+import ApplicationDetail from "../pages/profile/ApplicationDetail";
 import UserDetails from "../pages/UserDetails";
 import Wishlist from "../pages/Wishlist";
 const NotFound = React.lazy(() => import("../pages/NotFound"));
@@ -88,13 +92,16 @@ const AppRoutes = () => {
                     <Route index element={<Profile />} />
                     <Route path="edit" element={<EditProfile />} />
                     <Route path="wishlist" element={<Wishlist />} />
+                    <Route path="applications" element={<MyApplications />} />
                     <Route path="bookings" element={<MyBookings />} />
                     <Route path="payments" element={<MyPayments />} />
                     <Route path="documents" element={<Documents />} />
                     <Route path="community" element={<Community />} />
                     <Route path="services" element={<Services />} />
                     <Route path="bookings/:id" element={<BookingDetail />} />
+                    <Route path="applications/:id" element={<ApplicationDetail />} />
                     <Route path="help" element={<Help />} />
+                    <Route path="settings-page" element={<SettingsPage />} />
                 </Route>
 
                 <Route path="/wishlist" element={<Navigate to="/profile/wishlist" replace />} />
@@ -105,6 +112,7 @@ const AppRoutes = () => {
                 <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
                 <Route path="/booking-success" element={<ProtectedRoute><BookingSuccess /></ProtectedRoute>} />
                 <Route path="/paid" element={<ProtectedRoute><Paid /></ProtectedRoute>} />
+                <Route path="/sign-lease" element={<ProtectedRoute><SignLease /></ProtectedRoute>} />
 
 
                 {/* ================= 404 CATCH-ALL ================= */}

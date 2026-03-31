@@ -1,96 +1,141 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
 import { User, Calendar } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import VerifyOtpModal from "../common/VerifyOtpModal";
 
-// Custom Input for DatePicker
 const CustomDobInput = forwardRef(({ value, onClick, placeholder }, ref) => (
-    <button
-        type="button"
-        onClick={onClick}
-        ref={ref}
-        className={`w-full text-left bg-[#f0f0f0]/70 border border-[#0f4c3a]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#0f4c3a]/30 transition-colors flex items-center justify-between group h-[50px] ${!value ? 'text-[#9ca3af]' : 'text-[#111827]'}`}
-    >
-        <span className="truncate">{value || placeholder}</span>
-        <Calendar size={18} className="text-[#9ca3af] group-hover:text-[#4b5563] transition-colors shrink-0" />
-    </button>
+  <button
+    type="button"
+    onClick={onClick}
+    ref={ref}
+    className={`w-full text-left bg-[#f9f9f7] border border-[#0f4c3a]/10 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#0f4c3a]/30 transition-colors flex items-center justify-between ${!value ? 'text-[#9ca3af]' : 'text-[#111827]'}`}
+  >
+    <span className="truncate">{value || placeholder}</span>
+    <Calendar size={15} className="text-[#9ca3af] shrink-0" />
+  </button>
 ));
 
-const PersonalDetails = ({ formData, handleChange, setFormData, countryCode, setCountryCode }) => {
-    return (
-        <section className="bg-white p-8 rounded-2xl shadow-sm border border-[#0f4c3a]/5">
-            <div className="flex items-center gap-3 mb-6 border-b border-[#0f4c3a]/10 pb-4">
-                <div className="p-2 bg-[#0f4c3a]/5 rounded-lg text-[#111827]"><User size={20} /></div>
-                <h2 className="font-serif text-xl">Personal Information</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                <div className="md:col-span-6 space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-[#4b5563]">First Name</label>
-                    <input
-                        type="text" name="firstName" required
-                        value={formData.firstName || ""}
-                        className="w-full bg-[#f0f0f0]/70 border border-[#0f4c3a]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#0f4c3a]/30 transition-colors"
-                        onChange={handleChange}
-                    />
-                </div>
-                <div className="md:col-span-6 space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-[#4b5563]">Last Name</label>
-                    <input
-                        type="text" name="lastName" required
-                        value={formData.lastName || ""}
-                        className="w-full bg-[#f0f0f0]/70 border border-[#0f4c3a]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#0f4c3a]/30 transition-colors"
-                        onChange={handleChange}
-                    />
-                </div>
-                <div className="md:col-span-4 space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-[#4b5563]">Date of Birth</label>
-                    <DatePicker
-                        selected={formData.dob ? new Date(formData.dob) : null}
-                        onChange={(date) => setFormData(prev => ({ ...prev, dob: date ? date.toISOString().split('T')[0] : "" }))}
-                        dateFormat="dd/MM/yyyy"
-                        showYearDropdown
-                        showMonthDropdown
-                        dropdownMode="select"
-                        maxDate={new Date()}
-                        yearDropdownItemNumber={100}
-                        scrollableYearDropdown
-                        customInput={<CustomDobInput placeholder="Select Date of Birth" />}
-                        wrapperClassName="w-full"
-                        required
-                    />
-                </div>
-                <div className="md:col-span-8 space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-[#4b5563]">Phone Number</label>
-                    <div className="flex gap-2">
-                        <div className="relative shrink-0">
-                            <select
-                                value={countryCode}
-                                onChange={(e) => setCountryCode(e.target.value)}
-                                className="appearance-none bg-[#f0f0f0]/70 border border-[#0f4c3a]/10 rounded-xl pl-4 pr-8 py-3 focus:outline-none focus:border-[#0f4c3a]/30 transition-colors text-[#111827] text-sm h-full font-medium"
-                            >
-                                <option value="+49">🇩🇪 +49</option>
-                                <option value="+1">🇺🇸 +1</option>
-                                <option value="+44">🇬🇧 +44</option>
-                                <option value="+33">🇫🇷 +33</option>
-                                <option value="+91">🇮🇳 +91</option>
-                                <option value="+86">🇨🇳 +86</option>
-                            </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-[#9ca3af]">
-                                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-                            </div>
-                        </div>
-                        <input
-                            type="tel" name="phone" required
-                            value={formData.phone || ""}
-                            className="flex-1 bg-[#f0f0f0]/70 border border-[#0f4c3a]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#0f4c3a]/30 transition-colors min-w-0"
-                            onChange={handleChange}
-                            placeholder="123 456 7890"
-                        />
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
+const VerifiedBadge = () => (
+  <span className="inline-flex items-center gap-0.5 text-[8px] font-bold text-[#22C55E] bg-[#22C55E]/10 px-1.5 py-0.5 rounded-full ml-1">
+    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+    Verified
+  </span>
+);
+
+const VerifyButton = ({ onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="text-[8px] font-bold text-[#D4A017] bg-[#D4A017]/10 px-1.5 py-0.5 rounded-full ml-1 hover:bg-[#D4A017]/20 transition-colors"
+  >
+    Verify
+  </button>
+);
+
+const PersonalDetails = ({ formData, handleChange, setFormData, countryCode, setCountryCode, verifiedFields = {}, onFieldVerified }) => {
+  const inputClass = "w-full bg-[#f9f9f7] border border-[#0f4c3a]/10 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#0f4c3a]/30 transition-colors text-[#111827] placeholder:text-[#9ca3af]";
+  const verifiedInputClass = "w-full bg-[#22C55E]/[0.03] border border-[#22C55E]/20 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#22C55E]/40 transition-colors text-[#111827]";
+  const unverifiedInputClass = "w-full bg-[#D4A017]/[0.03] border border-[#D4A017]/20 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#D4A017]/30 transition-colors text-[#111827] placeholder:text-[#9ca3af]";
+
+  const [verifyModal, setVerifyModal] = useState(null); // 'email' | 'phone' | null
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-4">
+        <User size={16} className="text-[#0f4c3a]" />
+        <h3 className="text-sm font-bold text-[#111827]">Personal Information</h3>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-semibold text-[#4b5563]">First Name <span className="text-[#EA4335]">*</span></label>
+          <input type="text" name="firstName" required value={formData.firstName || ""} onChange={handleChange} className={inputClass} placeholder="John" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-semibold text-[#4b5563]">Last Name <span className="text-[#EA4335]">*</span></label>
+          <input type="text" name="lastName" required value={formData.lastName || ""} onChange={handleChange} className={inputClass} placeholder="Doe" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-semibold text-[#4b5563]">Date of Birth <span className="text-[#EA4335]">*</span></label>
+          <DatePicker
+            selected={formData.dob ? new Date(formData.dob) : null}
+            onChange={(date) => setFormData(prev => ({ ...prev, dob: date ? date.toISOString().split('T')[0] : "" }))}
+            dateFormat="dd/MM/yyyy"
+            showYearDropdown showMonthDropdown dropdownMode="select"
+            maxDate={new Date()} yearDropdownItemNumber={100} scrollableYearDropdown
+            customInput={<CustomDobInput placeholder="DD/MM/YYYY" />}
+            wrapperClassName="w-full"
+            required
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-semibold text-[#4b5563]">
+            Email <span className="text-[#EA4335]">*</span>
+            {verifiedFields.email ? <VerifiedBadge /> : formData.email && <VerifyButton onClick={() => setVerifyModal('email')} />}
+          </label>
+          <input
+            type="email" name="email" required
+            value={formData.email || ""} onChange={handleChange}
+            className={verifiedFields.email ? verifiedInputClass : formData.email ? unverifiedInputClass : inputClass}
+            placeholder="john@example.com"
+            readOnly={!!verifiedFields.email}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-semibold text-[#4b5563]">Who's moving in? <span className="text-[#EA4335]">*</span></label>
+          <select name="occupants" required value={formData.occupants || ""} onChange={handleChange} className={`${inputClass} ${!formData.occupants ? 'text-[#9ca3af]' : 'text-[#111827]'}`}>
+            <option value="" className="text-[#9ca3af]">Select</option>
+            <option value="1" className="text-[#111827]">Just me (1 person)</option>
+            <option value="2" className="text-[#111827]">Me + partner (2 people)</option>
+            <option value="3" className="text-[#111827]">Me + family (3 people)</option>
+            <option value="4" className="text-[#111827]">Sharing (4+ people)</option>
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-semibold text-[#4b5563]">
+            Phone Number <span className="text-[#EA4335]">*</span>
+            {verifiedFields.phone ? <VerifiedBadge /> : formData.phone && <VerifyButton onClick={() => setVerifyModal('phone')} />}
+          </label>
+          <div className="flex gap-2">
+            <select
+              value={countryCode}
+              onChange={(e) => setCountryCode(e.target.value)}
+              className="bg-[#f9f9f7] border border-[#0f4c3a]/10 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#0f4c3a]/30 transition-colors text-[#111827] font-medium shrink-0"
+              disabled={!!verifiedFields.phone}
+            >
+              <option value="+49">🇩🇪 +49</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+33">🇫🇷 +33</option>
+              <option value="+91">🇮🇳 +91</option>
+              <option value="+86">🇨🇳 +86</option>
+            </select>
+            <input
+              type="tel" name="phone" required
+              value={formData.phone || ""} onChange={handleChange}
+              className={`flex-1 ${verifiedFields.phone ? verifiedInputClass : formData.phone ? unverifiedInputClass : inputClass}`}
+              placeholder="123 456 7890"
+              readOnly={!!verifiedFields.phone}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Verify OTP Modal */}
+      {verifyModal && (
+        <VerifyOtpModal
+          type={verifyModal}
+          value={verifyModal === 'email' ? formData.email : `${countryCode}${formData.phone}`}
+          onVerified={() => {
+            onFieldVerified?.(verifyModal);
+            setVerifyModal(null);
+          }}
+          onClose={() => setVerifyModal(null)}
+        />
+      )}
+    </div>
+  );
 };
 
 export default PersonalDetails;

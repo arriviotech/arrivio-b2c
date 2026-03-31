@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, X, ChevronLeft, ChevronRight, Grid, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import OptimizedImage from '../common/OptimizedImage';
+import { GALLERY_SIZES, THUMBNAIL_SIZES } from '../../utils/imageUtils';
 
 const PropertyGallery = ({ images, title, rating, property }) => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -81,20 +83,26 @@ const PropertyGallery = ({ images, title, rating, property }) => {
 
         {/* 2. SIDE COLUMN (Top-Right Stack) */}
         <div className="col-span-4 row-span-1 relative group cursor-pointer overflow-hidden rounded-tr-[2.5rem] bg-gray-200">
-          <img
+          <OptimizedImage
             src={uniqueImages[1] || uniqueImages[0]}
             onClick={() => openLightbox(1)}
-            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+            width={400}
+            sizes={GALLERY_SIZES}
+            className="w-full h-full"
+            imgClassName="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
             alt="Side 1"
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
         </div>
 
         <div className="col-span-4 row-span-1 relative group cursor-pointer overflow-hidden bg-gray-200">
-          <img
+          <OptimizedImage
             src={uniqueImages[2] || uniqueImages[0]}
             onClick={() => openLightbox(2)}
-            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+            width={400}
+            sizes={GALLERY_SIZES}
+            className="w-full h-full"
+            imgClassName="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
             alt="Side 2"
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
@@ -102,20 +110,26 @@ const PropertyGallery = ({ images, title, rating, property }) => {
 
         {/* 3. BOTTOM ROW (Full Width) */}
         <div className="col-span-4 row-span-1 relative group cursor-pointer overflow-hidden rounded-bl-[2.5rem] bg-gray-200">
-          <img
+          <OptimizedImage
             src={uniqueImages[3] || uniqueImages[0]}
             onClick={() => openLightbox(3)}
-            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+            width={400}
+            sizes={GALLERY_SIZES}
+            className="w-full h-full"
+            imgClassName="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
             alt="Bottom 1"
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
         </div>
 
         <div className="col-span-4 row-span-1 relative group cursor-pointer overflow-hidden bg-gray-200">
-          <img
+          <OptimizedImage
             src={uniqueImages[4] || uniqueImages[0]}
             onClick={() => openLightbox(4)}
-            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+            width={400}
+            sizes={GALLERY_SIZES}
+            className="w-full h-full"
+            imgClassName="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
             alt="Bottom 2"
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
@@ -126,9 +140,12 @@ const PropertyGallery = ({ images, title, rating, property }) => {
           className="col-span-4 row-span-1 relative group cursor-pointer overflow-hidden rounded-br-[2.5rem] bg-gray-200"
           onClick={() => openLightbox(0)}
         >
-          <img
+          <OptimizedImage
             src={uniqueImages[5] || uniqueImages[0]}
-            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 opacity-60"
+            width={400}
+            sizes={GALLERY_SIZES}
+            className="w-full h-full"
+            imgClassName="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 opacity-60"
             alt="See More"
           />
           <div className="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-colors flex flex-col items-center justify-center text-white p-4">
@@ -153,13 +170,15 @@ const PropertyGallery = ({ images, title, rating, property }) => {
           }}
         >
           {uniqueImages.map((img, index) => (
-            <img
+            <OptimizedImage
               key={index}
               src={img}
               alt={`View ${index + 1}`}
               onClick={() => openLightbox(index)}
-              className="w-full h-full flex-shrink-0 snap-center object-cover"
-              loading="lazy"
+              width={640}
+              sizes={GALLERY_SIZES}
+              className="w-full h-full flex-shrink-0 snap-center"
+              imgClassName="w-full h-full object-cover"
             />
           ))}
         </div>
@@ -232,7 +251,14 @@ const PropertyGallery = ({ images, title, rating, property }) => {
                     className={`relative w-14 h-11 md:w-20 md:h-14 rounded overflow-hidden flex-shrink-0 transition-opacity ${currentImageIndex === idx ? 'opacity-100' : 'opacity-40 hover:opacity-100'
                       }`}
                   >
-                    <img src={img} className="w-full h-full object-cover" alt="thumb" />
+                    <OptimizedImage
+                      src={img}
+                      width={80}
+                      sizes={THUMBNAIL_SIZES}
+                      className="w-full h-full"
+                      imgClassName="w-full h-full object-cover"
+                      alt="thumb"
+                    />
                     {currentImageIndex === idx && (
                       <div className="absolute inset-0 border-2 border-white rounded-[1px] pointer-events-none z-10" />
                     )}

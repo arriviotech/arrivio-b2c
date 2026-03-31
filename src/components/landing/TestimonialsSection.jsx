@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Star, Quote } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const rawTestimonials = [
   {
@@ -59,6 +60,7 @@ const rawTestimonials = [
 const testimonials = [...rawTestimonials, ...rawTestimonials];
 
 const TestimonialsSection = () => {
+  const { t } = useLanguage();
   return (
     <section className="py-24 bg-[#f2f2f2] overflow-hidden">
 
@@ -73,7 +75,7 @@ const TestimonialsSection = () => {
           >
             <div className="w-8 h-[1px] bg-[#0f4c3a]"></div>
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#111827] font-sans">
-              Community Voices
+              {t("testimonials.label")}
             </span>
             <div className="w-8 h-[1px] bg-[#0f4c3a]"></div>
           </motion.div>
@@ -85,8 +87,8 @@ const TestimonialsSection = () => {
             transition={{ delay: 0.1 }}
             className="font-serif text-4xl md:text-5xl lg:text-6xl text-[#1A1A1A] leading-tight mb-6"
           >
-            Stories from the <br />
-            <span className="italic text-[#111827]">Community.</span>
+            {t("testimonials.title1")} <br />
+            <span className="italic text-[#111827]">{t("testimonials.title2")}</span>
           </motion.h2>
 
           <motion.p
@@ -96,7 +98,7 @@ const TestimonialsSection = () => {
             transition={{ delay: 0.2 }}
             className="text-[#5C5C50] font-sans text-lg max-w-2xl mx-auto"
           >
-            Real moments. Real people. Shared spaces that turn into memories.
+            {t("testimonials.subtitle")}
           </motion.p>
         </div>
       </div>
@@ -138,6 +140,8 @@ const TestimonialsSection = () => {
                       src={testimonial.image}
                       alt={testimonial.name}
                       className="w-12 h-12 rounded-full object-cover border border-[#0f4c3a]/20"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div>
                       <h4 className="font-sans font-bold text-[#1A1A1A] text-sm">

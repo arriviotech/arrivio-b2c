@@ -7,7 +7,6 @@ import { NotificationProvider } from "./context/NotificationContext";
 import { LanguageProvider } from "./context/LanguageContext";
 
 import Navbar from "./components/layout/Navbar";
-import AppNavbar from "./components/layout/AppNavbar";
 import SimpleNavbar from "./components/layout/SimpleNavbar";
 import Footer from "./components/layout/Footer";
 import MobileNavbar from "./components/layout/MobileNavbar";
@@ -25,44 +24,41 @@ const Layout = () => {
 
   const isProcessPage = [
     "/signin",
-    "/application/details",
     "/apply",
-    "/payment",
     "/demo-contract",
-    "/booking/review",
-    "/paid"
   ].includes(path);
 
   const isSuccessPage = path === "/booking-success";
 
-  let CurrentNavbar;
+  let navbarElement;
 
-  if (path.startsWith("/profile")) {
-    CurrentNavbar = AppNavbar;
-  } else if (isSuccessPage) {
-    CurrentNavbar = SimpleNavbar;
+  if (isSuccessPage) {
+    navbarElement = <SimpleNavbar />;
   } else if (isProcessPage) {
-    CurrentNavbar = () => null;
+    navbarElement = null;
   } else if (path === "/") {
-    CurrentNavbar = Navbar;
-  } else if (path.startsWith("/property") || path.startsWith("/unit")) {
-    CurrentNavbar = AppNavbar;
-  } else if (path.startsWith("/cities") || path.startsWith("/search") || path.startsWith("/wishlist")) {
-    CurrentNavbar = AppNavbar;
+    navbarElement = <Navbar variant="landing" />;
+  } else if (
+    path.startsWith("/profile") || path.startsWith("/property") || path.startsWith("/unit") ||
+    path.startsWith("/cities") || path.startsWith("/search") || path.startsWith("/wishlist") ||
+    path.startsWith("/booking") || path === "/payment" || path === "/paid" ||
+    path.startsWith("/application") || path === "/sign-lease"
+  ) {
+    navbarElement = <Navbar variant="app" />;
   } else {
-    CurrentNavbar = SimpleNavbar;
+    navbarElement = <SimpleNavbar />;
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f2f2f2]">
-      <CurrentNavbar property={path.startsWith("/property") ? { id: path.split("/").pop() } : null} />
+      {navbarElement}
 
       <main className="flex-grow">
         <AppRoutes />
       </main>
 
-      {!isProcessPage && !isSuccessPage && <Footer />}
-      {!isProcessPage && !isSuccessPage && <MobileNavbar />}
+      {!isProcessPage && !isSuccessPage && !path.startsWith("/booking") && path !== "/payment" && path !== "/paid" && !path.startsWith("/application") && path !== "/sign-lease" && <Footer />}
+      {!isProcessPage && !isSuccessPage && !path.startsWith("/booking") && path !== "/payment" && path !== "/paid" && !path.startsWith("/application") && path !== "/sign-lease" && <MobileNavbar />}
     </div>
   );
 };

@@ -18,6 +18,7 @@ import { fetchCoordinates, getDistance } from "../utils/geoUtils";
 import FilterSidePanel from "../components/search/FilterSidePanel";
 import PropertyCard from "@/components/property/PropertyCard";
 import SearchSkeleton from "@/components/skeletons/SearchSkeleton";
+import SEO from "@/components/common/SEO";
 import SearchControlBar from "../components/search/SearchControlBar";
 import SearchHeader from "../components/search/SearchHeader";
 import CityGrid from "../components/search/CityGrid";
@@ -184,6 +185,7 @@ const Search = () => {
 
   return (
     <div className="min-h-screen w-full bg-[#f2f2f2] pt-20 flex flex-col relative">
+      <SEO title="Search Apartments" description="Browse furnished apartments and rooms across Germany. Filter by city, price, amenities, and move-in date." path="/search" />
 
       {/* ── STICKY CONTROL BAR ── */}
       <SearchControlBar

@@ -1,29 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Minus } from 'lucide-react';
-
-const faqs = [
-  {
-    question: "What is included in the monthly rent?",
-    answer: "Everything you need to live comfortably. Your rent covers a fully furnished private suite, weekly cleaning, all utilities (high-speed WiFi, electricity, water, heating), and access to all community amenities and events."
-  },
-  {
-    question: "How long are the lease terms?",
-    answer: "We offer flexible living arrangements to suit your lifestyle. Memberships start at a minimum of 3 months, but most of our members choose to stay for 12 months or longer to fully immerse themselves in the community."
-  },
-  {
-    question: "Is Arrivio pet-friendly?",
-    answer: "Yes, we love pets! 🐾 Selected Arrivio properties offer pet-friendly floors and amenities. A small additional monthly fee may apply for deep cleaning services. Pet policies can vary by location, so please check directly with the property before booking."
-  },
-  {
-    question: "Can I transfer between locations?",
-    answer: "Absolutely. One of the biggest perks of Arrivio is the ability to move seamlessly between our cities. As a member, you have priority access to transfer your lease to any of our other locations with just 30 days' notice."
-  },
-  {
-    question: "Is there a deposit required?",
-    answer: "We require a security deposit equivalent to one month's rent, which is fully refundable at the end of your stay, provided the space is returned in good condition."
-  }
-];
+import { useLanguage } from '../../context/LanguageContext';
 
 const FAQItem = ({ question, answer, isOpen, onClick }) => {
   return (
@@ -67,7 +45,16 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => {
 };
 
 const FAQSection = () => {
+  const { t } = useLanguage();
   const [openIndex, setOpenIndex] = useState(-1);
+
+  const faqs = [
+    { question: t("faq.q1"), answer: t("faq.a1") },
+    { question: t("faq.q2"), answer: t("faq.a2") },
+    { question: t("faq.q3"), answer: t("faq.a3") },
+    { question: t("faq.q4"), answer: t("faq.a4") },
+    { question: t("faq.q5"), answer: t("faq.a5") },
+  ];
 
   return (
     // Background: Warm Stone (#f2f2f2)
@@ -85,7 +72,7 @@ const FAQSection = () => {
           >
             <div className="w-8 h-[1px] bg-[#0f4c3a]"></div>
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#111827] font-sans">
-              Need to Know
+              {t("faq.label")}
             </span>
             <div className="w-8 h-[1px] bg-[#0f4c3a]"></div>
           </motion.div>
@@ -97,8 +84,8 @@ const FAQSection = () => {
             transition={{ delay: 0.1 }}
             className="font-serif text-4xl md:text-5xl lg:text-6xl text-[#1A1A1A] leading-tight mb-4"
           >
-            Frequently Asked <br />
-            <span className="italic text-[#111827]">Questions.</span>
+            {t("faq.title1")} <br />
+            <span className="italic text-[#111827]">{t("faq.title2")}</span>
           </motion.h2>
         </div>
 

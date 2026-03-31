@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { BedDouble, Ruler, Layers, Users, Sofa, ChevronDown } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { BedDouble, Ruler, Layers, Users, Sofa, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import OptimizedImage from "../common/OptimizedImage";
+import { CARD_SIZES } from "../../utils/imageUtils";
 
 const UNIT_TYPE_LABELS = {
   studio: "Studio",
@@ -31,7 +33,85 @@ const getUnitDisplayName = (unit) => {
   return UNIT_TYPE_LABELS[unit.unit_type] || unit.unit_type;
 };
 
-const UnitCard = ({ unit, unitImage, onSelect }) => {
+const ImageCarousel = ({ images, alt, className = "aspect-[16/9]", children }) => {
+  const scrollRef = useRef(null);
+  const [currentIdx, setCurrentIdx] = useState(0);
+
+  const scroll = (dir, e) => {
+    e.stopPropagation();
+    const container = scrollRef.current;
+    if (!container) return;
+    const width = container.offsetWidth;
+    const newIdx = dir === 'next'
+      ? Math.min(currentIdx + 1, images.length - 1)
+      : Math.max(currentIdx - 1, 0);
+    container.scrollTo({ left: width * newIdx, behavior: 'smooth' });
+    setCurrentIdx(newIdx);
+  };
+
+  const handleScroll = () => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const idx = Math.round(container.scrollLeft / container.offsetWidth);
+    setCurrentIdx(idx);
+  };
+
+  if (!images.length) return null;
+
+  return (
+    <div className={`relative w-full overflow-hidden group/carousel ${className}`}>
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+      >
+        {images.map((src, i) => (
+          <div key={i} className="min-w-full h-full flex-none snap-center">
+            <OptimizedImage
+              src={src}
+              alt={`${alt} ${i + 1}`}
+              width={400}
+              sizes={CARD_SIZES}
+              className="w-full h-full"
+              imgClassName="w-full h-full object-cover"
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Nav arrows */}
+      {images.length > 1 && (
+        <>
+          {currentIdx > 0 && (
+            <button onClick={(e) => scroll('prev', e)} className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm shadow flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity z-[2]">
+              <ChevronLeft size={14} className="text-[#111827]" />
+            </button>
+          )}
+          {currentIdx < images.length - 1 && (
+            <button onClick={(e) => scroll('next', e)} className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm shadow flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity z-[2]">
+              <ChevronRight size={14} className="text-[#111827]" />
+            </button>
+          )}
+        </>
+      )}
+
+      {/* Dots */}
+      {images.length > 1 && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-[2]">
+          {images.map((_, i) => (
+            <span key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === currentIdx ? 'bg-white' : 'bg-white/50'}`} />
+          ))}
+        </div>
+      )}
+
+      {/* Overlays (tier badge, price, etc.) */}
+      {children}
+    </div>
+  );
+};
+
+const UnitCard = ({ unit, unitImages, onSelect }) => {
   const tierStyle = TIER_STYLES[unit.tier] || TIER_STYLES.standard;
   const pricingRules = (unit.unit_pricing_rules || []).sort((a, b) => a.monthly_rent_cents - b.monthly_rent_cents);
   const cheapest = pricingRules[0];
@@ -46,21 +126,16 @@ const UnitCard = ({ unit, unitImage, onSelect }) => {
 
       {/* ── MOBILE: vertical card ── */}
       <div className="md:hidden">
-        {/* Image */}
-        {unitImage && (
-          <div className="relative w-full aspect-[16/9] overflow-hidden">
-            <img src={unitImage} alt={displayName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-            {/* Tier badge on image */}
-            <span className={`absolute top-3 left-3 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${tierStyle.classes}`}>
-              {tierStyle.label}
-            </span>
-            {/* Price on image */}
-            <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm rounded-lg px-2.5 py-1 shadow-sm flex items-baseline gap-0.5">
-              <span className="text-base font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>€{cheapestRent.toLocaleString()}</span>
-              <span className="text-[10px] text-[#6b7280]">/mo</span>
-            </div>
+        {/* Image Carousel */}
+        <ImageCarousel images={unitImages} alt={displayName}>
+          <span className={`absolute top-3 left-3 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider z-[1] ${tierStyle.classes}`}>
+            {tierStyle.label}
+          </span>
+          <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm rounded-lg px-2.5 py-1 shadow-sm flex items-baseline gap-0.5 z-[1]">
+            <span className="text-base font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>€{cheapestRent.toLocaleString()}</span>
+            <span className="text-[10px] text-[#6b7280]">/mo</span>
           </div>
-        )}
+        </ImageCarousel>
 
         {/* Info */}
         <div className="px-4 py-3 space-y-2.5">
@@ -116,13 +191,11 @@ const UnitCard = ({ unit, unitImage, onSelect }) => {
       </div>
 
       {/* ── DESKTOP: horizontal card (original) ── */}
-      <div className="hidden md:flex min-h-[150px]">
-        {/* Left — Image */}
-        {unitImage && (
-          <div className="relative w-[200px] shrink-0 overflow-hidden">
-            <img src={unitImage} alt={displayName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-          </div>
-        )}
+      <div className="hidden md:flex h-[180px]">
+        {/* Left — Image Carousel */}
+        <div className="relative w-[220px] shrink-0 overflow-hidden">
+          <ImageCarousel images={unitImages} alt={displayName} className="h-full" />
+        </div>
 
         {/* Right — Info */}
         <div className="flex-1 px-5 py-4 flex flex-col justify-between min-w-0">
@@ -200,15 +273,19 @@ const UnitListingSection = ({ property, onSelectUnit }) => {
   const [filter, setFilter] = useState("all");
   const [showAll, setShowAll] = useState(false);
 
-  // Build a map of unit_id → first photo URL
+  // Build a map of unit_id → all photo URLs
   const unitImageMap = {};
+  const propertyImages = [];
   photos.forEach((p) => {
-    if (p.unit_id && !unitImageMap[p.unit_id]) {
-      unitImageMap[p.unit_id] = p.storage_path;
+    if (p.unit_id) {
+      if (!unitImageMap[p.unit_id]) unitImageMap[p.unit_id] = [];
+      unitImageMap[p.unit_id].push(p.storage_path);
+    } else if (p.storage_path) {
+      propertyImages.push(p.storage_path);
     }
   });
-  // Fallback: property cover image
-  const propertyCover = photos.find((p) => p.is_primary)?.storage_path || photos[0]?.storage_path;
+  // Fallback: all property-level photos as carousel
+  const fallbackImages = propertyImages.length > 0 ? propertyImages : (photos[0]?.storage_path ? [photos[0].storage_path] : []);
 
   if (units.length === 0) return null;
 
@@ -274,7 +351,7 @@ const UnitListingSection = ({ property, onSelectUnit }) => {
           <UnitCard
             key={unit.id}
             unit={unit}
-            unitImage={unitImageMap[unit.id] || propertyCover}
+            unitImages={unitImageMap[unit.id] || fallbackImages}
             onSelect={onSelectUnit}
           />
         ))}

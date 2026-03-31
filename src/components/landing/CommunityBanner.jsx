@@ -101,6 +101,8 @@ const CommunityBanner = () => {
           src={communityBg}
           alt="Community Vibe"
           className="w-full h-full object-cover opacity-100 grayscale-[10%]"
+          loading="lazy"
+          decoding="async"
         />
       </div>
 
@@ -160,6 +162,8 @@ const CommunityBanner = () => {
                   alt=""
                   className="w-[130px] h-[150px] sm:w-[160px] sm:h-[180px] object-cover rounded-[18px] shadow-2xl border-none"
                   style={{ transform: `rotate(${bubble.rotation}deg)` }}
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 <div className="flex flex-col gap-1">

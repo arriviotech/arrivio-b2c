@@ -21,6 +21,13 @@ const HeroSearchBar = () => {
     ];
 
     const handleSearch = () => {
+        // Save dates globally so unit pages can pick them up
+        if (startDate || endDate) {
+            sessionStorage.setItem('arrivio_search_dates', JSON.stringify({
+                start: startDate?.toISOString() || null,
+                end: endDate?.toISOString() || null,
+            }));
+        }
         navigate('/search', {
             state: {
                 location: location || 'All',

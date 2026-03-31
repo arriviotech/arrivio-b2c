@@ -1,28 +1,31 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { XCircle, Languages, DollarSign, FileCheck } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const VisionSection = () => {
+  const { t } = useLanguage();
+
   const features = [
     {
       icon: XCircle,
-      title: 'No Credit Barriers',
-      description: 'No SCHUFA needed. We qualify based on future potential, not past paperwork.',
+      title: t("vision.noCreditTitle"),
+      description: t("vision.noCreditDesc"),
     },
     {
       icon: Languages,
-      title: 'You are Heard',
-      description: 'We speak your language. English-first contracts and 24/7 dedicated support.',
+      title: t("vision.heardTitle"),
+      description: t("vision.heardDesc"),
     },
     {
       icon: DollarSign,
-      title: 'One Simple Payment',
-      description: 'Rent, high-speed WiFi, utilities, and furniture. One single monthly bill.',
+      title: t("vision.onePaymentTitle"),
+      description: t("vision.onePaymentDesc"),
     },
     {
       icon: FileCheck,
-      title: 'No Infinite Paperwork',
-      description: 'Apply on your phone. Upload docs securely. Get approved in 24 hours.',
+      title: t("vision.noPaperworkTitle"),
+      description: t("vision.noPaperworkDesc"),
     },
   ];
 
@@ -46,7 +49,7 @@ const VisionSection = () => {
           >
             <div className="w-8 h-[1px] bg-[#0f4c3a]"></div>
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#111827] font-sans">
-              The Vision
+              {t("vision.label")}
             </span>
             <div className="w-8 h-[1px] bg-[#0f4c3a]"></div>
           </motion.div>
@@ -58,7 +61,7 @@ const VisionSection = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="font-serif text-3xl md:text-4xl lg:text-5xl text-[#1A1A1A] leading-tight"
           >
-            Carefully Crafted for <span className="italic text-[#111827]">Belonging.</span>
+            {t("vision.title1")} <span className="italic text-[#111827]">{t("vision.title2")}</span>
           </motion.h2>
 
           <motion.p
@@ -68,7 +71,7 @@ const VisionSection = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="mt-6 font-sans text-[#5C5C50] text-lg max-w-2xl mx-auto leading-relaxed"
           >
-            To build thriving communities that bring together people starting new chapters, creating stability, growth, and a deep sense of belonging.<br className="hidden md:block" />
+            {t("vision.subtitle")}<br className="hidden md:block" />
           </motion.p>
         </div>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import SEO from '../components/common/SEO';
 import HeroSection from '../components/landing/HeroSection';
 import VisionSection from '../components/landing/VisionSection';
 import CommunityBanner from '../components/landing/CommunityBanner';
@@ -12,6 +13,7 @@ import TestimonialsSection from '../components/landing/TestimonialsSection';
 const Landing = () => {
   return (
     <div className="min-h-screen bg-[#f2f2f2]">
+      <SEO path="/" />
       {/* 1. Hero & Vision */}
       <HeroSection />
       <VisionSection />

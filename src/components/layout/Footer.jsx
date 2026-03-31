@@ -2,20 +2,22 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Instagram, Linkedin, Twitter, ArrowUpRight, Globe, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import logo1 from '../../assets/logo1.png';
+import logo1 from '../../assets/logo1.webp';
+import { useLanguage } from '../../context/LanguageContext';
 
 const Footer = () => {
+   const { t } = useLanguage();
    const currentYear = new Date().getFullYear();
 
    const footerLinks = {
-      Company: [
-         { name: 'Our Vision', path: '/#vision' },
-         { name: 'Community', path: '/#community' },
-         { name: 'Careers', path: '/careers' },
-         { name: 'Contact', path: '/contact' },
-         { name: 'For Businesses', path: 'https://arrivio-business.vercel.app/' },
+      [t("footer.company")]: [
+         { name: t("footer.ourVision"), path: '/#vision' },
+         { name: t("nav.community"), path: '/#community' },
+         { name: t("footer.careers"), path: '/careers' },
+         { name: t("footer.contact"), path: '/contact' },
+         { name: t("nav.forBusinesses"), path: 'https://arrivio-business.vercel.app/' },
       ],
-      Locations: [
+      [t("footer.locations")]: [
          { name: 'Aachen', path: '/cities' },
          { name: 'Berlin', path: '/cities' },
          { name: 'Bonn', path: '/cities' },
@@ -25,10 +27,10 @@ const Footer = () => {
          { name: 'Hamburg', path: '/cities' },
          { name: 'Munich', path: '/cities' },
       ],
-      Legal: [
-         { name: 'Privacy Policy', path: '/privacy' },
-         { name: 'Terms of Service', path: '/terms' },
-         { name: 'Imprint', path: '/imprint' },
+      [t("footer.legal")]: [
+         { name: t("footer.privacy"), path: '/privacy' },
+         { name: t("footer.terms"), path: '/terms' },
+         { name: t("footer.imprint"), path: '/imprint' },
       ],
    };
 
@@ -58,19 +60,19 @@ const Footer = () => {
                         <h2 className="font-serif text-5xl">Arrivio.</h2>
                      </div>
                      <p className="font-sans text-[#f2f2f2]/60 text-lg max-w-sm leading-relaxed">
-                        Redefining belonging for the global citizen. Stability is the ultimate luxury.
+                        {t("footer.tagline")}
                      </p>
                   </div>
 
                   {/* Newsletter Sign-up */}
                   <div className="max-w-md">
                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-4 text-[#D4A017]">
-                        Join our inner circle
+                        {t("footer.newsletter")}
                      </p>
                      <div className="relative group">
                         <input
                            type="email"
-                           placeholder="Email address"
+                           placeholder={t("footer.emailPlaceholder")}
                            className="w-full bg-transparent border-b border-[#f2f2f2]/20 py-4 outline-none focus:border-[#D4A017] transition-colors font-serif italic text-xl"
                         />
                         <button className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-[#f2f2f2]/20 flex items-center justify-center hover:bg-[#f2f2f2] hover:text-[#1A2E22] transition-all">
@@ -122,11 +124,11 @@ const Footer = () => {
 
                {/* Copyright */}
                <div className="flex flex-col md:flex-row items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-[#f2f2f2]/40">
-                  <span>© {currentYear} Arrivio Living</span>
+                  <span>© {currentYear} {t("footer.copyright")}</span>
                   <div className="hidden md:block w-1 h-1 bg-[#D4A017] rounded-full"></div>
                   <div className="flex items-center gap-2">
                      <Globe size={12} />
-                     <span>Headquarters: Berlin, Germany</span>
+                     <span>{t("footer.headquarters")}</span>
                   </div>
                </div>
 

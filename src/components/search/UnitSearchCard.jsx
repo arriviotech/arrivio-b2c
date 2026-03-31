@@ -1,6 +1,8 @@
 import React, { useState, useRef } from "react";
 import { Ruler, Layers, Users, Sofa, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { useWishlist } from "../../context/WishlistContext";
+import OptimizedImage from "../common/OptimizedImage";
+import { CARD_SIZES } from "../../utils/imageUtils";
 
 const UNIT_TYPE_LABELS = {
   studio: "Studio",
@@ -21,6 +23,11 @@ const UnitSearchCard = ({ unit, property, onClick }) => {
   const pricing = (unit.unit_pricing_rules || []).sort((a, b) => a.monthly_rent_cents - b.monthly_rent_cents)[0];
   const monthlyRent = pricing ? Math.round(pricing.monthly_rent_cents / 100) : 0;
   const wishlisted = isUnitInWishlist(unit.id);
+
+  // Find earliest available date
+  const today = new Date().toISOString().split('T')[0];
+  const availableDates = (unit.unit_availability || []).filter(a => a.status === 'available' && a.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+  const availableFrom = availableDates[0]?.date;
 
   // Build image list — cover + gallery
   const coverImage = property.image || property.cover_image;
@@ -47,7 +54,7 @@ const UnitSearchCard = ({ unit, property, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl border border-[#0f4c3a]/5 shadow-sm overflow-hidden cursor-pointer group hover:shadow-md transition-all"
+      className="bg-white rounded-2xl border border-[#0f4c3a]/5 shadow-sm overflow-hidden cursor-pointer group hover:shadow-md transition-all h-full flex flex-col"
     >
       {/* Image Carousel */}
       <div className="relative aspect-[5/4] sm:aspect-[3/2] overflow-hidden bg-[#f2f2f2]">
@@ -57,12 +64,14 @@ const UnitSearchCard = ({ unit, property, onClick }) => {
           className="w-full h-full flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth"
         >
           {images.length > 0 ? images.map((img, idx) => (
-            <img
+            <OptimizedImage
               key={idx}
               src={img}
               alt={property.title}
-              className="w-full h-full object-cover flex-shrink-0 snap-center group-hover:scale-105 transition-transform duration-500"
-              loading="lazy"
+              width={640}
+              sizes={CARD_SIZES}
+              className="w-full h-full flex-shrink-0 snap-center"
+              imgClassName="w-full h-full object-cover"
             />
           )) : (
             <div className="w-full h-full bg-[#0f4c3a]/5 flex-shrink-0" />
@@ -101,7 +110,7 @@ const UnitSearchCard = ({ unit, property, onClick }) => {
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-4 flex-1 flex flex-col">
         {/* Unit type + tier */}
         <div className="flex items-center gap-2 mb-0.5">
           <h3 className="font-serif text-xl sm:text-[17px] leading-[1.3] text-[#111827] group-hover:text-[#1f2937] transition-colors" style={{ fontVariantNumeric: 'lining-nums' }}>
@@ -115,7 +124,7 @@ const UnitSearchCard = ({ unit, property, onClick }) => {
             {tierStyle.label}
           </span>
         </div>
-        <p className="text-base sm:text-[12px] text-[#4b5563] font-medium mb-3">
+        <p className="text-base sm:text-[12px] text-[#4b5563] font-medium mb-3 line-clamp-1">
           {property.title} · {property.location || property.city}
         </p>
 
@@ -142,18 +151,25 @@ const UnitSearchCard = ({ unit, property, onClick }) => {
         </div>
 
         {/* Price + Availability */}
-        <div className="flex items-center justify-between pt-2 border-t border-[#0f4c3a]/5">
+        <div className="flex items-center justify-between pt-2 border-t border-[#0f4c3a]/5 mt-auto">
           <div className="flex items-baseline gap-1">
             <span className="font-sans text-2xl sm:text-[18px] font-bold text-[#111827]">€{monthlyRent.toLocaleString()}</span>
             <span className="text-sm sm:text-[11px] text-[#6b7280]">/month</span>
           </div>
-          <span className="flex items-center gap-1.5 text-sm sm:text-[10px] font-bold text-[#16a34a]">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22C55E] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#22C55E]"></span>
+          {unit.status === 'available' ? (
+            <span className="flex items-center gap-1.5 text-sm sm:text-[10px] font-bold text-[#16a34a]">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22C55E] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#22C55E]"></span>
+              </span>
+              {availableFrom ? `From ${new Date(availableFrom).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : 'Available now'}
             </span>
-            Available
-          </span>
+          ) : (
+            <span className="flex items-center gap-1.5 text-sm sm:text-[10px] font-bold text-[#EA4335]">
+              <span className="h-2 w-2 rounded-full bg-[#EA4335]" />
+              Occupied
+            </span>
+          )}
         </div>
       </div>
     </div>

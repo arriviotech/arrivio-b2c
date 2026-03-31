@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   User, Heart, Calendar, CreditCard, HelpCircle,
-  Mail, Phone, Globe, MapPin, ChevronRight, LogOut, Edit2, LayoutDashboard, FileText, Users, ShoppingBag
+  Mail, Phone, Globe, MapPin, ChevronRight, LogOut, Edit2, LayoutDashboard, FileText, Users, ShoppingBag, ClipboardList, ArrowLeft, Settings
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/WishlistContext";
@@ -12,6 +12,7 @@ import { supabase } from "../../supabase/client";
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/profile", exact: true },
+  { icon: ClipboardList, label: "My Applications", path: "/profile/applications" },
   { icon: Calendar, label: "My Bookings", path: "/profile/bookings" },
   { icon: CreditCard, label: "Payments", path: "/profile/payments" },
   { icon: FileText, label: "Documents", path: "/profile/documents" },
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { icon: Heart, label: "Saved", path: "/profile/wishlist" },
   { icon: User, label: "Personal Details", path: "/profile/edit" },
   { icon: HelpCircle, label: "Help & Support", path: "/profile/help" },
+  { icon: Settings, label: "Settings", path: "/profile/settings-page" },
 ];
 
 const DashboardLayout = () => {
@@ -29,7 +31,7 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState(null);
-  const [stats, setStats] = useState({ applications: 0, bookings: 0 });
+  const [stats, setStats] = useState({ applications: 0, bookings: 0, activeApps: 0, activeBookings: 0 });
 
   useEffect(() => {
     if (!user) return;
@@ -41,11 +43,18 @@ const DashboardLayout = () => {
         .maybeSingle();
       if (data) setProfile(data);
 
-      const [appsRes, bookingsRes] = await Promise.all([
+      const [appsRes, bookingsRes, activeAppsRes, activeBookingsRes] = await Promise.all([
         supabase.from("applications").select("id", { count: "exact", head: true }).eq("profile_id", user.id),
         supabase.from("bookings").select("id", { count: "exact", head: true }).eq("profile_id", user.id),
+        supabase.from("applications").select("id", { count: "exact", head: true }).eq("profile_id", user.id).in("status", ["pending_payment", "pending_profile", "pending_signature", "pending_approval", "under_review"]),
+        supabase.from("bookings").select("id", { count: "exact", head: true }).eq("profile_id", user.id).in("status", ["active", "confirmed"]),
       ]);
-      setStats({ applications: appsRes.count || 0, bookings: bookingsRes.count || 0 });
+      setStats({
+        applications: appsRes.count || 0,
+        bookings: bookingsRes.count || 0,
+        activeApps: activeAppsRes.count || 0,
+        activeBookings: activeBookingsRes.count || 0,
+      });
     };
     fetchSidebar();
   }, [user]);
@@ -65,7 +74,8 @@ const DashboardLayout = () => {
   };
 
   const getBadge = (path) => {
-    if (path === "/profile/bookings" && stats.applications > 0) return stats.applications;
+    if (path === "/profile/applications" && stats.activeApps > 0) return stats.activeApps;
+    if (path === "/profile/bookings" && stats.activeBookings > 0) return stats.activeBookings;
     if (path === "/profile/wishlist" && totalSaved > 0) return totalSaved;
     return null;
   };
@@ -103,11 +113,11 @@ const DashboardLayout = () => {
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-[#374151]">Applications</span>
-                    <span className="text-xs font-bold text-[#111827]">{stats.applications}</span>
+                    <span className="text-xs font-bold text-[#111827]">{stats.activeApps}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-[#374151]">Bookings</span>
-                    <span className="text-xs font-bold text-[#111827]">{stats.bookings}</span>
+                    <span className="text-xs font-bold text-[#111827]">{stats.activeBookings}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-[#374151]">Saved</span>
@@ -180,6 +190,18 @@ const DashboardLayout = () => {
 
           {/* ════════ RIGHT CONTENT (changes per route) ════════ */}
           <div className="flex-1 min-w-0 min-h-[60vh]">
+            {/* Mobile back button — sub-pages only */}
+            {location.pathname !== '/profile' && (
+              <div className="md:hidden mb-4">
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="flex items-center gap-1.5 text-[#4b5563] hover:text-[#111827] transition-colors group"
+                >
+                  <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
+                  <span className="text-xs font-bold uppercase tracking-widest">Back</span>
+                </button>
+              </div>
+            )}
             <Outlet />
           </div>
 

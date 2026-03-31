@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, ArrowRight, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 
 // --- YOUR LOCAL IMAGES ---
 import berlinImg from '../../assets/cities/berlin.jpeg';
@@ -12,7 +13,7 @@ import dusseldorfImg from '../../assets/cities/dusseldorf.jpeg';
 import bonnImg from '../../assets/cities/bonn.jpeg';
 import aachenImg from '../../assets/cities/aachen.jpeg';
 import hamburgImg from '../../assets/cities/hamburg.jpeg';
-import germanyMap from '../../assets/germany.png';
+import germanyMap from '../../assets/germany.webp';
 
 import { supabase } from '../../supabase/client'; // ✅ Import supabase
 
@@ -28,6 +29,7 @@ const initialLocations = [
 ];
 
 const LocationsSection = () => {
+  const { t } = useLanguage();
   const [activeCityId, setActiveCityId] = useState(1);
   const [locations, setLocations] = useState(initialLocations); // ✅ State for locations
 
@@ -84,12 +86,12 @@ const LocationsSection = () => {
               viewport={{ once: true }}
             >
               <h2 className="text-3xl md:text-5xl font-serif font-bold text-[#111827] mb-6 leading-tight">
-                Explore our <br />
-                <span className="italic text-[#D4A017]">prime locations</span>
+                {t("locations.title1")} <br />
+                <span className="italic text-[#D4A017]">{t("locations.title2")}</span>
               </h2>
 
               <p className="text-[#5C5C50] font-sans text-lg mb-8 leading-relaxed max-w-md">
-                Click on a city to preview the lifestyle. Find the vibe that fits your journey.
+                {t("locations.subtitle")}
               </p>
             </motion.div>
 
@@ -112,7 +114,7 @@ const LocationsSection = () => {
                     {city.name}
                   </span>
                   <span className={`text-[10px] font-bold uppercase tracking-wider ${activeCityId === city.id ? 'text-white/60' : 'text-[#9ca3af]'}`}>
-                    {city.count} homes
+                    {city.count} {t("locations.homes")}
                   </span>
                 </button>
               ))}
@@ -133,14 +135,14 @@ const LocationsSection = () => {
                     <p className="text-[#5C5C50] text-sm font-sans">{activeLocation.description}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] text-[#6b7280] uppercase tracking-widest font-bold">Starting from</p>
-                    <p className="text-xl font-serif font-bold text-[#111827]">€{activeLocation.price}<span className="text-sm font-sans font-normal text-[#5C5C50]">/mo</span></p>
+                    <p className="text-[10px] text-[#6b7280] uppercase tracking-widest font-bold">{t("locations.startingFrom")}</p>
+                    <p className="text-xl font-serif font-bold text-[#111827]">€{activeLocation.price}<span className="text-sm font-sans font-normal text-[#5C5C50]">{t("locations.perMonth")}</span></p>
                   </div>
                 </div>
 
                 <Link to="/search" state={{ location: activeLocation.name }}>
                   <button className="w-full h-12 bg-[#D4A017]/20 hover:bg-[#0f4c3a] hover:text-white text-[#111827] rounded-xl font-bold font-sans uppercase tracking-widest text-xs transition-all duration-300 flex items-center justify-center gap-2">
-                    View Homes in {activeLocation.name}
+                    {t("locations.viewHomes")} {activeLocation.name}
                     <ArrowRight size={16} />
                   </button>
                 </Link>
@@ -176,6 +178,8 @@ const LocationsSection = () => {
                     absolute inset-0 w-full h-full object-contain pointer-events-none
                     scale-110 sm:scale-120 lg:scale-150 opacity-40
                   "
+                    loading="lazy"
+                    decoding="async"
                   />
 
 
@@ -211,7 +215,7 @@ const LocationsSection = () => {
                     exit={{ opacity: 0, y: -10 }}
                   >
                     <p className="text-white font-serif font-bold text-3xl mb-1">{activeLocation.name.toUpperCase()}</p>
-                    <p className="text-[#D4A017] text-[10px] font-bold uppercase tracking-[0.2em]">Available Now</p>
+                    <p className="text-[#D4A017] text-[10px] font-bold uppercase tracking-[0.2em]">{t("locations.availableNow")}</p>
                   </motion.div>
                 </AnimatePresence>
               </div>

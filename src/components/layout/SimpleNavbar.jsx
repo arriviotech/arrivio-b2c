@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import greenLogo from '../../assets/greenlogo.png';
+import greenLogo from '../../assets/greenlogo.webp';
 
 const SimpleNavbar = () => {
   return (

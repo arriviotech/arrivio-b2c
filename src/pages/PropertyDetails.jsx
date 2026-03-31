@@ -28,15 +28,173 @@ import DescriptionSection from "../components/property/DescriptionSection";
 import StickyNav from "../components/property/StickyNav";
 import SimilarProperties from "../components/property/SimilarProperties";
 import PropertyStats from "../components/property/PropertyStats";
+import SEO from "../components/common/SEO";
 import NotifyMeButton from "../components/common/NotifyMeButton";
 import ApplicationDetailsSection from "../components/property/ApplicationDetailsSection";
 import UnitListingSection from "../components/property/UnitListingSection";
-import PaymentSummaryCard from "../components/property/PaymentSummaryCard";
 
 // =========================
 // SECTION IDS (stable ref)
 // =========================
 const SECTION_IDS = ["about", "units", "amenities", "policies", "details", "neighborhood"];
+
+// Interactive booking widget (Design 2+3 merged)
+const PropertyWidget = ({ units, unitTypes, allTiers, property, UNIT_TYPE_LABELS, TIER_LABELS, TIER_STYLES, TIER_DOTS }) => {
+  const [selectedType, setSelectedType] = useState("all");
+  const [selectedTier, setSelectedTier] = useState("all");
+
+  const filtered = units.filter((u) => {
+    if (selectedType !== "all" && u.unit_type !== selectedType) return false;
+    if (selectedTier !== "all" && u.tier !== selectedTier) return false;
+    return true;
+  });
+
+  const availableFiltered = filtered.filter((u) => u.status === "available");
+  const allPrices = filtered.flatMap((u) => (u.unit_pricing_rules || []).map((p) => p.monthly_rent_cents));
+  const minPrice = allPrices.length > 0 ? Math.round(Math.min(...allPrices) / 100) : 0;
+  const maxPrice = allPrices.length > 0 ? Math.round(Math.max(...allPrices) / 100) : 0;
+
+  // Group filtered units by type for price breakdown
+  const typeMap = {};
+  filtered.forEach((u) => {
+    const type = u.unit_type;
+    if (!typeMap[type]) typeMap[type] = { prices: [], available: 0, total: 0, tiers: new Set() };
+    typeMap[type].total++;
+    if (u.status === "available") typeMap[type].available++;
+    (u.unit_pricing_rules || []).forEach((p) => typeMap[type].prices.push(p.monthly_rent_cents));
+    if (u.tier) typeMap[type].tiers.add(u.tier);
+  });
+
+  return (
+    <div className="bg-white rounded-2xl border border-[#0f4c3a]/5 shadow-lg overflow-hidden">
+      {/* Dark green price header */}
+      <div className="bg-[#0f4c3a] px-6 py-5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1">Starting from</p>
+        <div className="flex items-baseline gap-1">
+          <span className="text-3xl font-bold text-white" style={{ fontVariantNumeric: 'lining-nums' }}>€{minPrice.toLocaleString()}</span>
+          {maxPrice !== minPrice && (
+            <span className="text-lg text-white/50 font-medium" style={{ fontVariantNumeric: 'lining-nums' }}>– €{maxPrice.toLocaleString()}</span>
+          )}
+          <span className="text-sm text-white/50">/month</span>
+        </div>
+        <p className="text-[11px] text-white/50 mt-1">
+          {availableFiltered.length} of {filtered.length} {selectedType !== "all" || selectedTier !== "all" ? "matching " : ""}units available
+        </p>
+      </div>
+
+      {/* Interactive selectors */}
+      <div className="px-6 pt-4 pb-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#9ca3af] mb-2.5">Unit type</p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setSelectedType("all")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              selectedType === "all" ? "bg-[#0f4c3a] text-white" : "bg-[#f2f2f2] text-[#4b5563] hover:bg-[#e5e5e5]"
+            }`}
+          >
+            All
+          </button>
+          {unitTypes.map((type) => (
+            <button
+              key={type}
+              onClick={() => setSelectedType(type)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                selectedType === type ? "bg-[#0f4c3a] text-white" : "bg-[#f2f2f2] text-[#4b5563] hover:bg-[#e5e5e5]"
+              }`}
+            >
+              {UNIT_TYPE_LABELS[type] || type}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {allTiers.length > 1 && (
+        <div className="px-6 pb-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#9ca3af] mb-2.5">Tier</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedTier("all")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                selectedTier === "all" ? "bg-[#0f4c3a] text-white border-[#0f4c3a]" : "bg-white text-[#4b5563] border-[#0f4c3a]/10 hover:border-[#0f4c3a]/30"
+              }`}
+            >
+              All
+            </button>
+            {allTiers.map((tier) => (
+              <button
+                key={tier}
+                onClick={() => setSelectedTier(tier)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                  selectedTier === tier ? "bg-[#0f4c3a] text-white border-[#0f4c3a]" : `${TIER_STYLES[tier] || "bg-white text-[#4b5563]"} hover:opacity-80`
+                }`}
+              >
+                {TIER_LABELS[tier] || tier}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Price breakdown by type */}
+      <div className="px-6 py-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#9ca3af] mb-2.5">Price breakdown</p>
+        <div className="space-y-2">
+          {Object.entries(typeMap).sort((a, b) => Math.min(...a[1].prices) - Math.min(...b[1].prices)).map(([type, data]) => {
+            const min = Math.round(Math.min(...data.prices) / 100);
+            const max = Math.round(Math.max(...data.prices) / 100);
+            const isCheapest = min === minPrice;
+            return (
+              <div key={type} className={`flex items-center justify-between py-2 px-3 rounded-xl ${isCheapest ? 'bg-[#0f4c3a]/5 ring-1 ring-[#0f4c3a]/10' : 'bg-[#f9f9f7]'}`}>
+                <div>
+                  <p className="text-sm font-semibold text-[#111827]">{UNIT_TYPE_LABELS[type] || type}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className={`text-[10px] font-bold ${data.available > 0 ? 'text-[#22C55E]' : 'text-[#EA4335]'}`}>
+                      {data.available > 0 ? `${data.available} available` : 'Occupied'}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {[...data.tiers].map((t) => (
+                        <span key={t} className={`w-1.5 h-1.5 rounded-full ${TIER_DOTS[t] || TIER_DOTS.standard}`} title={t} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>
+                    €{min.toLocaleString()}{max !== min ? `–${max.toLocaleString()}` : ''}
+                  </p>
+                  <p className="text-[10px] text-[#9ca3af]">/month</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="px-6 pb-5 pt-1">
+        {availableFiltered.length > 0 ? (
+          <a
+            href="#units"
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.getElementById("units");
+              if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+            className="w-full py-3 bg-[#0f4c3a] text-[#f2f2f2] rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#0a3a2b] transition-colors"
+          >
+            View {availableFiltered.length} available unit{availableFiltered.length !== 1 ? 's' : ''}
+          </a>
+        ) : (
+          <NotifyMeButton
+            propertyId={property.id}
+            city={property.city}
+            propertyName={property.title}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
 
 const PropertyDetails = () => {
   const { slug } = useParams();
@@ -155,6 +313,12 @@ const PropertyDetails = () => {
 
   return (
     <div className="min-h-screen bg-[#f2f2f2] pb-32 md:pb-20">
+      <SEO
+        title={property.title}
+        description={`${property.title} in ${property.city}, Germany. Furnished, move-in ready housing from €${property.price}/mo.`}
+        image={property.images?.[0]}
+        path={`/property/${slug}`}
+      />
       <div className="pt-24 px-4 md:px-12 max-w-7xl mx-auto">
 
         {/* NAVIGATION: Back Button & Breadcrumbs */}
@@ -206,37 +370,6 @@ const PropertyDetails = () => {
             </span>
           </div>
 
-          {/* RIGHT: Static Action Icons (4 cols) */}
-          <div className="lg:col-span-4 flex items-center justify-end gap-3 px-1">
-            <div className="relative">
-              <button
-                onClick={handleShare}
-                className="p-2.5 rounded-full bg-white border border-[#0f4c3a]/10 shadow-sm hover:shadow-md transition-all group"
-                title="Share Property"
-              >
-                <Share2 size={16} className="text-[#111827] group-hover:scale-110 transition-transform" />
-              </button>
-              {copied && (
-                <span className="absolute -bottom-10 right-0 text-[10px] font-bold uppercase tracking-wider text-[#111827] bg-white px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap z-50 border border-[#0f4c3a]/5">
-                  Copied!
-                </span>
-              )}
-            </div>
-
-            <button
-              onClick={handleToggleWishlist}
-              className="p-2.5 rounded-full bg-white border border-[#0f4c3a]/10 shadow-sm hover:shadow-md transition-all group"
-              title={wishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-            >
-              <Heart
-                size={16}
-                className={`transition-all ${wishlisted
-                  ? "fill-red-500 text-red-500 scale-110"
-                  : "text-[#111827] group-hover:text-red-500 group-hover:scale-110"
-                  }`}
-              />
-            </button>
-          </div>
         </div>
 
         {/* --- MAIN CONTENT GRID --- */}
@@ -253,6 +386,36 @@ const PropertyDetails = () => {
                 rating={property.rating}
                 property={property}
               />
+              {/* Like & Share overlay */}
+              <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+                <div className="relative">
+                  <button
+                    onClick={handleShare}
+                    className="p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-md hover:bg-white hover:shadow-lg transition-all group"
+                    title="Share Property"
+                  >
+                    <Share2 size={16} className="text-[#111827] group-hover:scale-110 transition-transform" />
+                  </button>
+                  {copied && (
+                    <span className="absolute -bottom-10 right-0 text-[10px] font-bold uppercase tracking-wider text-[#111827] bg-white px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap z-50 border border-[#0f4c3a]/5">
+                      Copied!
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={handleToggleWishlist}
+                  className="p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-md hover:bg-white hover:shadow-lg transition-all group"
+                  title={wishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+                >
+                  <Heart
+                    size={16}
+                    className={`transition-all ${wishlisted
+                      ? "fill-red-500 text-red-500 scale-110"
+                      : "text-[#111827] group-hover:text-red-500 group-hover:scale-110"
+                      }`}
+                  />
+                </button>
+              </div>
             </div>
 
             {/* 2. HEADER INFO */}
@@ -326,51 +489,24 @@ const PropertyDetails = () => {
           {/* RIGHT — PROPERTY INFO SIDEBAR */}
           <div className="lg:col-span-4 hidden lg:block">
             <div className="sticky top-[96px] space-y-6 mt-12 lg:mt-0">
-              {/* Property summary card */}
-              <div className="bg-white rounded-[2rem] border border-[#0f4c3a]/5 shadow-lg p-6">
-                <h3 className="font-serif text-xl text-[#111827] mb-2">Property Overview</h3>
-                <p className="text-xs text-[#6b7280] font-medium mb-4">{property.category}</p>
+              {/* Property summary card — Design 2+3: Pricing-focused + Interactive */}
+              {(() => {
+                const units = property.units || [];
+                const UNIT_TYPE_LABELS = { studio: "Studio", one_bedroom: "1 Bedroom", two_bedroom: "2 Bedroom", shared_room: "Shared Room" };
+                const TIER_LABELS = { standard: "Standard", premium: "Premium", executive: "Executive" };
+                const TIER_STYLES = {
+                  standard: "border-[#0f4c3a]/15 text-[#111827] bg-white",
+                  premium: "border-[#DAA520] text-[#92700C] bg-[#DAA520]/5",
+                  executive: "border-[#0f4c3a] text-[#0f4c3a] bg-[#0f4c3a]/5",
+                };
+                const TIER_DOTS = { standard: "bg-[#9ca3af]", premium: "bg-[#DAA520]", executive: "bg-[#0f4c3a]" };
 
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-[#4b5563]">Total units</span>
-                    <span className="font-bold text-[#111827]">{property.unitCount}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#4b5563]">Available</span>
-                    <span className="font-bold text-[#22C55E]">{property.availableUnits} units</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#4b5563]">Starting from</span>
-                    <span className="font-bold text-[#111827]">€{property.price}/mo</span>
-                  </div>
-                </div>
+                const unitTypes = [...new Set(units.map((u) => u.unit_type))];
+                const allTiers = [...new Set(units.map((u) => u.tier).filter(Boolean))];
 
-                <div className="mt-5 pt-4 border-t border-[#0f4c3a]/5">
-                  {property.availableUnits > 0 ? (
-                    <a
-                      href="#units"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        const el = document.getElementById("units");
-                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }}
-                      className="w-full py-3 bg-[#0f4c3a] text-[#f2f2f2] rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#0a3a2b] transition-colors"
-                    >
-                      Browse available units
-                    </a>
-                  ) : (
-                    <NotifyMeButton
-                      propertyId={property.id}
-                      city={property.city}
-                      propertyName={property.title}
-                    />
-                  )}
-                </div>
-              </div>
+                return <PropertyWidget units={units} unitTypes={unitTypes} allTiers={allTiers} property={property} UNIT_TYPE_LABELS={UNIT_TYPE_LABELS} TIER_LABELS={TIER_LABELS} TIER_STYLES={TIER_STYLES} TIER_DOTS={TIER_DOTS} />;
+              })()}
 
-              {/* Payment Summary — only renders if user has bookings here */}
-              <PaymentSummaryCard propertyId={property.id} />
 
               {/* Manager info */}
               {property.manager_name && (

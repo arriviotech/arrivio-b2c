@@ -133,6 +133,13 @@ const DateSectionContent = ({ filters, setFilters }) => {
     const [start, end] = dates;
     setFilters(prev => ({ ...prev, availableFrom: start, availableTo: end }));
     if (start && !end) setActiveField('end');
+    // Sync to global sessionStorage
+    if (start || end) {
+      sessionStorage.setItem('arrivio_search_dates', JSON.stringify({
+        start: start?.toISOString() || null,
+        end: end?.toISOString() || null,
+      }));
+    }
   };
 
   const handleQuickDuration = (days) => {
@@ -140,6 +147,10 @@ const DateSectionContent = ({ filters, setFilters }) => {
     const end = new Date(start.getTime() + days * 24 * 60 * 60 * 1000);
     setFilters(prev => ({ ...prev, availableFrom: start, availableTo: end }));
     setActiveField('end');
+    sessionStorage.setItem('arrivio_search_dates', JSON.stringify({
+      start: start.toISOString(),
+      end: end.toISOString(),
+    }));
   };
 
   const handleClear = () => {

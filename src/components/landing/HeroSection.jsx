@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, Search, MapPin } from 'lucide-react';
 import HeroSearchBar from './HeroSearchBar';
+import { useLanguage } from '../../context/LanguageContext';
 
 // --- IMPORTS ---
 import heroVideo1 from '../../assets/hero/video1.mp4';
@@ -14,6 +15,7 @@ import heroVideo7 from '../../assets/hero/video7.mp4';
 
 const HeroSection = () => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
 
     const [activePlayer, setActivePlayer] = useState(0);
     const [playOrder, setPlayOrder] = useState(0);
@@ -69,11 +71,11 @@ const HeroSection = () => {
                     <div>
                         <h1 className="text-white leading-[1.1] drop-shadow-2xl">
                             <span className="block font-serif text-[2.7rem] sm:text-5xl md:text-7xl lg:text-8xl tracking-tighter whitespace-nowrap">
-                                Arrival to <span className="italic text-[#F7E6B0]">Belonging.</span>
+                                {t("hero.headline1")} <span className="italic text-[#F7E6B0]">{t("hero.headline2")}</span>
                             </span>
                         </h1>
                         <p className="font-sans text-base sm:text-lg md:text-xl text-white/80 mt-5 md:mt-6 max-w-md sm:max-w-lg md:max-w-2xl mx-auto font-medium leading-relaxed">
-                            Thoughtfully designed living spaces made for new beginnings. No paperwork stress. No uncertainty. Just home.
+                            {t("hero.subtitle")}
                         </p>
                     </div>
 
@@ -86,12 +88,12 @@ const HeroSection = () => {
                     <div className="flex items-center gap-4 text-sm font-medium drop-shadow-md -mt-3 md:-mt-6">
                         <Link to="/cities" className="flex items-center gap-1.5 text-white/70 hover:text-white transition-colors">
                             <MapPin size={14} />
-                            Explore cities
+                            {t("hero.exploreCities")}
                         </Link>
                         <span className="text-white/30">|</span>
                         <Link to="/search" className="flex items-center gap-1.5 text-white/70 hover:text-white transition-colors">
                             <Search size={14} />
-                            Browse all
+                            {t("hero.browseAll")}
                         </Link>
                     </div>
                 </div>
@@ -101,7 +103,7 @@ const HeroSection = () => {
             <div className="absolute bottom-6 md:bottom-8 left-0 w-full z-40 flex justify-center">
                 <div className="hidden sm:inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 shadow-lg cursor-default">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] animate-pulse shadow-[0_0_10px_rgba(74,222,128,0.6)]" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#f0f0f0]">Now Live in Germany</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#f0f0f0]">{t("hero.liveInGermany")}</span>
                 </div>
             </div>
         </div>

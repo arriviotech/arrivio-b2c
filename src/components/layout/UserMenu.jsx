@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, User, LogOut, Heart, Calendar, HelpCircle, CreditCard } from "lucide-react";
+import { Menu, User, LogOut, Heart, Calendar, HelpCircle, CreditCard, Settings } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/WishlistContext";
@@ -81,8 +81,9 @@ const UserMenu = ({ className = "" }) => {
 
                         <div className="h-px bg-[#0f4c3a]/5 mx-4" />
 
-                        {/* Support */}
+                        {/* Support & Settings */}
                         <div className="py-1">
+                            <MenuItem icon={Settings} label="Settings" to="/profile/settings-page" onClick={() => setIsOpen(false)} />
                             <MenuItem icon={HelpCircle} label="Help" to="/profile/help" onClick={() => setIsOpen(false)} />
                         </div>
 

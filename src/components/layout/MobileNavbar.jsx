@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Search, Heart, Bell, User, LayoutDashboard } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { useWishlist } from "../../context/WishlistContext";
 import { useNotifications } from "../../context/NotificationContext";
 import NotificationPanel from "./NotificationPanel";
@@ -9,6 +10,7 @@ import NotificationPanel from "./NotificationPanel";
 const MobileNavbar = () => {
     const location = useLocation();
     const path = location.pathname;
+    const { t } = useLanguage();
     const { user, openAuthModal } = useAuth();
     const { totalSaved } = useWishlist();
     const { unreadCount } = useNotifications();
@@ -33,11 +35,11 @@ const MobileNavbar = () => {
     if (isDetailPage) return null;
 
     const navItems = [
-        { icon: Home, label: "Home", path: "/" },
-        { icon: Search, label: "Search", path: "/search" },
-        { icon: Heart, label: "Saved", path: "/profile/wishlist", badge: totalSaved || 0, requireAuth: true },
-        { icon: Bell, label: "Alerts", action: "notifications", badge: unreadCount || 0, requireAuth: true },
-        { icon: user ? LayoutDashboard : User, label: user ? "Account" : "Sign In", path: "/profile", requireAuth: true },
+        { icon: Home, label: t("nav.home"), path: "/" },
+        { icon: Search, label: t("nav.search"), path: "/search" },
+        { icon: Heart, label: t("nav.saved"), path: "/profile/wishlist", badge: totalSaved || 0, requireAuth: true },
+        { icon: Bell, label: t("nav.alerts"), action: "notifications", badge: unreadCount || 0, requireAuth: true },
+        { icon: user ? LayoutDashboard : User, label: user ? t("nav.account") : t("nav.signIn"), path: "/profile", requireAuth: true },
     ];
 
     const isActive = (item) => {
@@ -122,7 +124,7 @@ const MobileNavbar = () => {
             {isNotifOpen && (
                 <div className="md:hidden fixed inset-0 z-[99]">
                     <div className="absolute inset-0 bg-black/20" onClick={() => setIsNotifOpen(false)} />
-                    <div className="absolute bottom-16 left-0 right-0 mx-2 mb-2">
+                    <div className="absolute bottom-20 left-2 right-2 [&>div]:!static [&>div]:!w-full [&>div]:!max-w-full [&>div]:!mt-0 [&>div]:max-h-[60vh] [&>div]:overflow-y-auto">
                         <NotificationPanel isOpen={true} onClose={() => setIsNotifOpen(false)} />
                     </div>
                 </div>

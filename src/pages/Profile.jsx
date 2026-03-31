@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Search, Heart, CreditCard, HelpCircle, FileText,
   Users, ArrowRight, Calendar, Clock, CheckCircle,
-  AlertCircle, User, ShoppingBag,
-  Smartphone, Landmark, Scale, ShieldCheck, GraduationCap, Package
+  AlertCircle, User, ShoppingBag, Loader2,
+  Smartphone, Landmark, Scale, ShieldCheck, GraduationCap, Package, Home, ClipboardList
 } from "lucide-react";
+import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
 import { supabase } from "../supabase/client";
 import { useAddonCatalogue, useMyAddonOrders } from "../supabase/hooks/useAddons";
 import DashboardSkeleton from "../components/skeletons/DashboardSkeleton";
+import SEO from "../components/common/SEO";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -23,8 +25,11 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [activeBooking, setActiveBooking] = useState(null);
   const [activeApplication, setActiveApplication] = useState(null);
+  const [totalActiveApps, setTotalActiveApps] = useState(0);
   const [nextPayment, setNextPayment] = useState(null);
   const [recentPayments, setRecentPayments] = useState([]);
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -40,17 +45,23 @@ const Profile = () => {
           .limit(1).maybeSingle();
         if (bookingData) setActiveBooking(bookingData);
 
-        if (!bookingData) {
-          const { data: appData } = await supabase
-            .from("applications")
-            .select(`id, status, move_in_date, move_out_date, tenant_type,
-              units!unit_id ( unit_number, unit_type, properties ( name, slug, city ) )`)
-            .eq("profile_id", user.id)
-            .in("status", ["pending_payment", "pending_profile", "pending_signature", "pending_approval", "under_review"])
-            .order("created_at", { ascending: false })
-            .limit(1).maybeSingle();
-          if (appData) setActiveApplication(appData);
-        }
+        // Always fetch applications (even if there's an active booking)
+        const { data: appData } = await supabase
+          .from("applications")
+          .select(`id, status, move_in_date, move_out_date, tenant_type, unit_id, created_at,
+            units!unit_id ( unit_number, unit_type, unit_pricing_rules ( monthly_rent_cents ), properties ( id, name, slug, city, property_photos ( storage_path, is_primary, display_order ) ) )`)
+          .eq("profile_id", user.id)
+          .in("status", ["pending_payment", "pending_profile", "pending_signature", "pending_approval", "under_review"])
+          .order("created_at", { ascending: false })
+          .limit(1).maybeSingle();
+        if (appData) setActiveApplication(appData);
+
+        const { count } = await supabase
+          .from("applications")
+          .select("id", { count: "exact", head: true })
+          .eq("profile_id", user.id)
+          .in("status", ["pending_payment", "pending_profile", "pending_signature", "pending_approval", "under_review"]);
+        setTotalActiveApps(count || 0);
 
         const { data: paymentData } = await supabase
           .from("monthly_rent_statements")
@@ -94,11 +105,36 @@ const Profile = () => {
 
   return (
     <div className="space-y-5">
+      <SEO title="Dashboard" path="/profile" />
 
       {/* Welcome */}
       <div>
         <h1 className="text-2xl font-serif text-[#111827] mb-1">Welcome back, {firstName}</h1>
         <p className="text-sm text-[#6b7280]">Here's what's happening with your account</p>
+      </div>
+
+      {/* Mobile quick nav — hidden on desktop (sidebar handles it) */}
+      <div className="flex gap-2 overflow-x-auto no-scrollbar md:hidden">
+        <Link to="/profile/applications" className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e5e7eb] rounded-full text-[10px] font-bold text-[#374151] whitespace-nowrap shrink-0">
+          <ClipboardList size={12} className="text-[#9ca3af]" />
+          Applications {totalActiveApps > 0 && <span className="bg-[#0f4c3a] text-white text-[7px] font-bold min-w-[14px] h-[14px] px-1 flex items-center justify-center rounded-full">{totalActiveApps}</span>}
+        </Link>
+        <Link to="/profile/bookings" className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e5e7eb] rounded-full text-[10px] font-bold text-[#374151] whitespace-nowrap shrink-0">
+          <Calendar size={12} className="text-[#9ca3af]" />
+          Bookings
+        </Link>
+        <Link to="/profile/payments" className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e5e7eb] rounded-full text-[10px] font-bold text-[#374151] whitespace-nowrap shrink-0">
+          <CreditCard size={12} className="text-[#9ca3af]" />
+          Payments
+        </Link>
+        <Link to="/profile/documents" className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e5e7eb] rounded-full text-[10px] font-bold text-[#374151] whitespace-nowrap shrink-0">
+          <FileText size={12} className="text-[#9ca3af]" />
+          Documents
+        </Link>
+        <Link to="/profile/edit" className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e5e7eb] rounded-full text-[10px] font-bold text-[#374151] whitespace-nowrap shrink-0">
+          <User size={12} className="text-[#9ca3af]" />
+          Profile
+        </Link>
       </div>
 
       {/* Active Booking */}
@@ -136,84 +172,219 @@ const Profile = () => {
       })()}
 
       {/* Application In Progress */}
-      {!activeBooking && activeApplication && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl border border-[#e5e7eb] p-6">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#9ca3af]">Application In Progress</p>
-            <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase ${STATUS_CONFIG[activeApplication.status]?.bg} ${STATUS_CONFIG[activeApplication.status]?.color}`}>
-              {STATUS_CONFIG[activeApplication.status]?.label}
-            </span>
-          </div>
-          <h3 className="font-serif text-lg text-[#111827] mb-1">{activeApplication.units?.properties?.name}</h3>
-          <p className="text-xs text-[#6b7280] mb-5">{activeApplication.units?.unit_type?.replace(/_/g, ' ')} · {activeApplication.units?.properties?.city}</p>
+      {activeApplication && (() => {
+        const unit = activeApplication.units || {};
+        const property = unit.properties || {};
+        const photos = (property.property_photos || []).sort((a, b) => a.display_order - b.display_order);
+        const coverImage = photos.find(p => p.is_primary)?.storage_path || photos[0]?.storage_path;
+        const navigateToApp = () => {
+          const appState = {
+            applicationId: activeApplication.id,
+            propertyId: property.id,
+            unitId: activeApplication.unit_id,
+            title: `${property.name}. ${unit.unit_type?.replace(/_/g, ' ')}`,
+            propertyName: property.name,
+            unitNumber: unit.unit_number,
+            unitType: unit.unit_type,
+            city: property.city,
+            checkIn: activeApplication.move_in_date,
+            checkOut: activeApplication.move_out_date,
+          };
+          if (activeApplication.status === 'pending_payment') navigate("/booking/review", { state: appState });
+          else if (activeApplication.status === 'pending_profile') navigate("/application/details", { state: appState });
+          else if (activeApplication.status === 'pending_signature') navigate("/application/details", { state: appState });
+          else navigate(`/profile/applications/${activeApplication.id}`);
+        };
+        const ctaLabel = activeApplication.status === 'pending_payment' ? 'Continue to Payment' :
+          activeApplication.status === 'pending_profile' ? 'Complete Application' :
+          activeApplication.status === 'pending_signature' ? 'Sign Lease' : 'View Status';
+        const stepText = activeApplication.status === 'pending_payment' ? 'Step 1 of 4: Pay holding deposit' :
+          activeApplication.status === 'pending_profile' ? 'Step 2 of 4: Complete your application' :
+          activeApplication.status === 'pending_signature' ? 'Step 3 of 4: Sign your lease' :
+          activeApplication.status === 'pending_approval' || activeApplication.status === 'under_review' ? 'Step 4 of 4: Under review' : '';
 
-          {/* Step Progress with Labels */}
+        return (
+        /* Compact application card */
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl border border-[#0f4c3a]/10 shadow-sm overflow-hidden"
+        >
           {(() => {
-            const STEPS = [
-              { key: "pending_payment", label: "Payment", icon: CreditCard },
-              { key: "pending_profile", label: "Documents", icon: FileText },
-              { key: "pending_signature", label: "Signature", icon: FileText },
-              { key: "pending_approval", label: "Review", icon: Clock },
-              { key: "approved", label: "Approved", icon: CheckCircle },
+            const steps = ['pending_payment', 'pending_profile', 'pending_signature', 'under_review', 'approved'];
+            const statusKey = activeApplication.status === 'pending_approval' ? 'under_review' : activeApplication.status;
+            const idx = steps.indexOf(statusKey);
+            const STEP_ITEMS = [
+              { label: "Pay", icon: CreditCard },
+              { label: "Apply", icon: FileText },
+              { label: "Sign", icon: FileText },
+              { label: "Review", icon: Clock },
+              { label: "Move in", icon: Home },
             ];
-            const currentIdx = STEPS.findIndex(s => s.key === activeApplication.status);
+            const rent = unit.unit_pricing_rules?.[0]?.monthly_rent_cents;
 
             return (
-              <div className="mb-5">
-                {/* Progress Bar */}
-                <div className="flex items-center gap-1 mb-3">
-                  {STEPS.map((step, i) => (
-                    <div key={step.key} className={`flex-1 h-1.5 rounded-full transition-all ${
-                      i < currentIdx ? 'bg-[#22C55E]' : i === currentIdx ? 'bg-[#0f4c3a]' : 'bg-[#e5e7eb]'
-                    }`} />
-                  ))}
+              <>
+                {/* Applied date + status */}
+                {activeApplication.created_at && (
+                  <div className="px-4 pt-3 pb-0 flex items-center justify-between">
+                    <span className={`px-1.5 py-0.5 rounded-full text-[7px] font-bold uppercase shrink-0 ${STATUS_CONFIG[activeApplication.status]?.bg} ${STATUS_CONFIG[activeApplication.status]?.color}`}>
+                      {STATUS_CONFIG[activeApplication.status]?.label}
+                    </span>
+                    <span className="text-[8px] text-[#9ca3af]">Applied {new Date(activeApplication.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  </div>
+                )}
+
+                {/* Top: thumbnail + info */}
+                <div className="flex gap-3 p-4 pt-2 pb-3">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0">
+                    {coverImage ? (
+                      <img src={coverImage} alt={property.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-[#0f4c3a]/10" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-serif text-sm text-[#111827] truncate">{property.name}</h3>
+                    <p className="text-[9px] text-[#6b7280]">{unit.unit_type?.replace(/_/g, ' ')}{unit.unit_number ? ` · Unit ${unit.unit_number}` : ''}{property.city ? ` · ${property.city}` : ''}</p>
+                    <div className="flex items-center gap-1 mt-1.5 text-[9px] text-[#9ca3af] flex-wrap">
+                      <Calendar size={9} className="shrink-0" />
+                      {activeApplication.move_in_date ? (
+                        <span className="text-[#111827] font-medium">{new Date(activeApplication.move_in_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} → {new Date(activeApplication.move_out_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                      ) : <span>Dates TBD</span>}
+                      {rent && <span className="ml-auto text-xs font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>€{Math.round(rent / 100)}/mo</span>}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Step Labels */}
-                <div className="flex justify-between">
-                  {STEPS.map((step, i) => {
-                    const StepIcon = step.icon;
-                    const isComplete = i < currentIdx;
-                    const isCurrent = i === currentIdx;
-                    return (
-                      <div key={step.key} className="flex flex-col items-center gap-0.5 sm:gap-1" style={{ width: `${100 / STEPS.length}%` }}>
-                        <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center ${
-                          isComplete ? 'bg-[#22C55E] text-white' :
-                          isCurrent ? 'bg-[#0f4c3a] text-white' :
-                          'bg-[#e5e7eb] text-[#9ca3af]'
-                        }`}>
-                          {isComplete ? <CheckCircle size={10} /> : <StepIcon size={10} />}
-                        </div>
-                        <span className={`text-[7px] sm:text-[9px] font-bold uppercase tracking-wider text-center leading-tight ${
-                          isCurrent ? 'text-[#0f4c3a]' : isComplete ? 'text-[#16a34a]' : 'text-[#9ca3af]'
-                        }`}>
-                          {step.label}
-                        </span>
-                      </div>
-                    );
-                  })}
+                {/* Timeline */}
+                <div className="px-4 pb-3">
+                  <div className="flex items-center">
+                    {STEP_ITEMS.map((step, i) => {
+                      const isComplete = i < idx;
+                      const isCurrent = i === idx;
+                      const Icon = step.icon;
+                      return (
+                        <React.Fragment key={i}>
+                          <div className="flex flex-col items-center gap-0.5">
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                              isComplete ? 'bg-[#22C55E]' : isCurrent ? 'bg-[#0f4c3a]' : 'bg-[#f2f2f2]'
+                            }`}>
+                              {isComplete ? (
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                              ) : (
+                                <Icon size={12} className={isCurrent ? 'text-white' : 'text-[#9ca3af]'} />
+                              )}
+                            </div>
+                            <p className={`text-[7px] font-bold ${isCurrent ? 'text-[#0f4c3a]' : isComplete ? 'text-[#22C55E]' : 'text-[#9ca3af]'}`}>{step.label}</p>
+                          </div>
+                          {i < STEP_ITEMS.length - 1 && (
+                            <div className={`flex-1 h-[2px] -mt-3.5 mx-0.5 ${isComplete ? 'bg-[#22C55E]' : 'bg-[#e5e7eb]'}`} />
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                {/* Current Step Description */}
-                <div className="mt-4 p-3 bg-[#f7f7f7] rounded-xl">
-                  <p className="text-xs text-[#374151]">
-                    {currentIdx === 0 && "Pay the holding deposit to secure your unit."}
-                    {currentIdx === 1 && "Upload your required documents — passport, contract, and ID."}
-                    {currentIdx === 2 && "Sign your rental agreement via DocuSign."}
-                    {currentIdx === 3 && "Our team is reviewing your application. We'll notify you soon."}
-                    {currentIdx === 4 && "Congratulations! Your application is approved."}
-                    {currentIdx === -1 && "Start your application to get your new home."}
-                  </p>
+                {/* CTA + info */}
+                <div className="px-4 pb-4">
+                  <button onClick={navigateToApp} className="w-full py-2.5 bg-[#0f4c3a] text-white rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#0a3a2b] transition-colors">
+                    {ctaLabel} <ArrowRight size={12} />
+                  </button>
+                  <div className="flex items-center justify-center gap-4 mt-2">
+                    <button onClick={() => setShowWithdraw(true)} className="text-[10px] text-[#EA4335] font-semibold hover:underline">Withdraw application</button>
+                    {totalActiveApps > 1 && (
+                      <>
+                        <span className="text-[#d1d5db]">·</span>
+                        <button onClick={() => navigate('/profile/applications')} className="text-[10px] font-semibold text-[#0f4c3a] hover:underline">
+                          View all ({totalActiveApps}) →
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </>
             );
           })()}
-
-          <button onClick={() => navigate("/application/details")} className="w-full py-3 bg-[#0f4c3a] text-white rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#0a3a2b] transition-colors">
-            Continue Application <ArrowRight size={14} />
-          </button>
         </motion.div>
-      )}
+        );
+      })()}
+
+      {/* Withdraw Modal */}
+      <AnimatePresence>
+        {showWithdraw && activeApplication && (() => {
+          const wUnit = activeApplication.units || {};
+          const wProperty = wUnit.properties || {};
+          const hasPaid = activeApplication.status !== 'pending_payment';
+
+          const handleWithdraw = async () => {
+            setWithdrawing(true);
+            try {
+              await supabase.from('applications').update({ status: 'withdrawn' }).eq('id', activeApplication.id);
+              setActiveApplication(null);
+              setShowWithdraw(false);
+              toast.success('Application withdrawn');
+            } catch (e) {
+              toast.error('Failed to withdraw');
+            } finally {
+              setWithdrawing(false);
+            }
+          };
+
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[200] flex items-center justify-center bg-black/30 backdrop-blur-sm"
+              onClick={() => !withdrawing && setShowWithdraw(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="w-12 h-12 rounded-full bg-[#EA4335]/10 flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle size={24} className="text-[#EA4335]" />
+                </div>
+                <h3 className="text-lg font-serif text-[#111827] text-center mb-2">Withdraw application?</h3>
+                <p className="text-[12px] text-[#6b7280] text-center mb-2">
+                  You're about to withdraw your application for <span className="font-semibold text-[#111827]">{wProperty.name}</span>.
+                </p>
+                {hasPaid && (
+                  <div className="bg-[#D4A017]/5 border border-[#D4A017]/15 rounded-lg px-3 py-2.5 mb-4">
+                    <p className="text-[11px] text-[#92700C]">
+                      You've already paid the holding deposit. Your refund will be processed according to our cancellation policy.
+                    </p>
+                  </div>
+                )}
+                {!hasPaid && (
+                  <p className="text-[11px] text-[#9ca3af] text-center mb-4">
+                    No payment has been made. This will simply cancel your application.
+                  </p>
+                )}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowWithdraw(false)}
+                    disabled={withdrawing}
+                    className="flex-1 py-2.5 bg-[#f2f2f2] text-[#4b5563] rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#e5e5e5] transition-colors"
+                  >
+                    Keep it
+                  </button>
+                  <button
+                    onClick={handleWithdraw}
+                    disabled={withdrawing}
+                    className="flex-1 py-2.5 bg-[#EA4335] text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#d63a2e] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {withdrawing ? <><Loader2 size={12} className="animate-spin" /> Withdrawing...</> : 'Withdraw'}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
 
       {/* No Activity */}
       {!activeBooking && !activeApplication && (

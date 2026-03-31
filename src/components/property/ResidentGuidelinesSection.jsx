@@ -1,7 +1,7 @@
 import React from "react";
 import {
     CigaretteOff, PawPrint, Music, Users,
-    Clock, CalendarCheck, AlertTriangle
+    Clock, CalendarCheck, AlertTriangle, CheckCircle, Info
 } from "lucide-react";
 
 const ResidentGuidelinesSection = () => {
@@ -47,7 +47,7 @@ const ResidentGuidelinesSection = () => {
                     <div>
                         <p className="text-sm font-bold text-[#111827] mb-1">Cancellation policy</p>
                         <p className="text-xs text-[#4b5563] leading-relaxed">
-                            Full refund if cancelled 30+ days before move-in. 50% refund if cancelled within 48 hours of booking. No refund after that.
+                            Free cancellation with <span className="font-semibold text-[#111827]">full refund</span> if cancelled 30+ days before move-in, <span className="font-semibold text-[#111827]">50% refund</span> within 48 hours of booking, and <span className="font-semibold text-[#111827]">no refund</span> after that. Holding deposit is always refundable if your application is not approved.
                         </p>
                     </div>
                 </div>

@@ -30,7 +30,12 @@ export const calculateDuration = (startDate, endDate) => {
     }
 
     const parts = [];
-    if (months > 0) {
+    if (months >= 12) {
+        const years = Math.floor(months / 12);
+        const remMonths = months % 12;
+        parts.push(`${years} year${years > 1 ? 's' : ''}`);
+        if (remMonths > 0) parts.push(`${remMonths} month${remMonths > 1 ? 's' : ''}`);
+    } else if (months > 0) {
         parts.push(`${months} month${months > 1 ? 's' : ''}`);
     }
     if (days > 0) {

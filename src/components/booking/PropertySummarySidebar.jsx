@@ -1,136 +1,140 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { Info, RefreshCcw, ShieldCheck } from "lucide-react";
 import { calculateDuration } from "../../utils/dateUtils";
+import OptimizedImage from "../common/OptimizedImage";
+import { SIDEBAR_SIZES } from "../../utils/imageUtils";
 
-/**
- * PropertySummarySidebar - Sticky sidebar showing property summary and price breakdown
- */
 const PropertySummarySidebar = ({ state }) => {
-    if (!state) return null;
+  if (!state) return null;
 
-    const {
-        title,
-        city,
-        address,
-        image,
-        checkIn,
-        checkOut,
-        monthlyTotal = 1786,
-        utilities = 400,
-        bookingFee = 465,
-        cleaningFee = 240,
-        deposit = 1000,
-    } = state;
+  const {
+    title,
+    propertyName,
+    city,
+    address,
+    image,
+    checkIn,
+    checkOut,
+    monthlyTotal = 0,
+    deposit = 0,
+    holdingDeposit = 150,
+  } = state;
 
-    const monthlySubtotal = monthlyTotal;
-    const totalFees = bookingFee + cleaningFee;
-    const dueNow = monthlyTotal + totalFees;
+  const firstMonthAfterHolding = monthlyTotal - holdingDeposit;
+  const dueAtMoveIn = firstMonthAfterHolding + deposit;
+  const dailyRate = Math.round(monthlyTotal / 30);
 
-    return (
-        <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="sticky top-32 w-full max-w-2xl bg-white rounded-3xl overflow-hidden shadow-2xl shadow-arrivio-green/5 border border-arrivio-green/5"
-        >
-            {/* Property Image & Header */}
-            <div className="p-5 pb-0">
-                <div className="aspect-[16/11] w-full rounded-2xl overflow-hidden shadow-md group relative">
-                    <img
-                        src={image || "/placeholder-property.jpg"}
-                        alt={title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-arrivio-green/20 to-transparent opacity-60" />
-                </div>
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="sticky top-28 w-full max-w-md"
+    >
+      <div className="bg-white rounded-2xl border border-[#0f4c3a]/5 shadow-lg overflow-hidden">
+        {/* Property image */}
+        <div className="relative aspect-[16/9] overflow-hidden">
+          <OptimizedImage
+            src={image}
+            alt={title}
+            width={400}
+            sizes={SIDEBAR_SIZES}
+            className="w-full h-full"
+            imgClassName="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+          <div className="absolute bottom-3 left-4 right-4">
+            <h3 className="text-white font-serif text-lg leading-tight">{title}</h3>
+            <p className="text-white/70 text-[11px] mt-0.5">{address || city}</p>
+          </div>
+        </div>
 
-                <div className="mt-6 px-1">
-                    <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-1">
-                            <h3 className="text-2xl font-serif text-arrivio-green leading-tight pr-2" title={title}>
-                                {title}
-                            </h3>
-                            <p className="text-[10px] font-bold text-arrivio-accent uppercase tracking-[0.2em]">
-                                {city} • {address?.split(',').pop().trim() || 'Germany'}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+        {/* Dates */}
+        <div className="px-5 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#9ca3af]">Move in</p>
+              <p className="text-sm font-semibold text-[#111827]">{checkIn}</p>
             </div>
-
-            <div className="p-6 space-y-8">
-                {/* Dates Summary */}
-                <div className="relative flex flex-col sm:flex-row items-center justify-between py-4 px-4 bg-arrivio-beige/30 rounded-2xl border border-arrivio-green/5 gap-4 sm:gap-0">
-                    <div className="flex flex-col gap-1 items-center sm:items-start min-w-fit">
-                        <span className="text-[9px] font-bold text-arrivio-green/40 uppercase tracking-[0.15em]">Move in</span>
-                        <span className="text-sm font-semibold text-arrivio-green whitespace-nowrap">{checkIn}</span>
-                    </div>
-
-                    <div className="flex-grow w-full sm:w-auto sm:mx-3 relative flex flex-col items-center">
-                        <div className="hidden sm:block w-full border-t border-dashed border-arrivio-green/20 mb-1"></div>
-                        <div className="sm:hidden w-[1px] h-6 border-l border-dashed border-arrivio-green/20 absolute -top-4 -bottom-4"></div>
-                        <span className="relative z-10 text-[8px] font-bold text-arrivio-accent uppercase tracking-widest whitespace-nowrap bg-white/80 px-2 py-0.5 rounded-full border border-arrivio-green/5">
-                            {calculateDuration(checkIn, checkOut) || "N/A"}
-                        </span>
-                    </div>
-
-                    <div className="flex flex-col gap-1 items-center sm:items-end sm:text-right min-w-fit">
-                        <span className="text-[9px] font-bold text-arrivio-green/40 uppercase tracking-[0.15em]">Move out</span>
-                        <span className="text-sm font-semibold text-arrivio-green whitespace-nowrap">{checkOut}</span>
-                    </div>
-                </div>
-
-                {/* Price Breakdown */}
-                <div className="space-y-5">
-                    <div className="space-y-3.5">
-                        <div className="flex justify-between items-center text-arrivio-green/60">
-                            <span className="text-[13px] font-medium">Rent per month</span>
-                            <span className="font-semibold text-arrivio-green/80 text-[15px]">€{(monthlyTotal - utilities).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-arrivio-green/60">
-                            <span className="text-[13px] font-medium">Utilities per month</span>
-                            <span className="font-semibold text-arrivio-green/80 text-[15px]">€{utilities.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center pt-1 border-t border-arrivio-green/5 mt-2">
-                            <span className="text-[13px] font-bold text-arrivio-green">Monthly subtotal</span>
-                            <span className="text-[15px] font-bold text-arrivio-green">€{monthlySubtotal.toLocaleString()}</span>
-                        </div>
-                    </div>
-
-                    <div className="space-y-3.5 pt-2">
-                        <div className="flex justify-between items-center text-arrivio-green/60">
-                            <span className="text-[13px] font-medium">Booking fee</span>
-                            <span className="font-semibold text-arrivio-green/80 text-[15px]">€{bookingFee.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-arrivio-green/60">
-                            <span className="text-[13px] font-medium">Cleaning fee</span>
-                            <span className="font-semibold text-arrivio-green/80 text-[15px]">€{cleaningFee.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center pt-1 border-t border-arrivio-green/5 mt-2">
-                            <span className="text-[13px] font-bold text-arrivio-green">Total service fees</span>
-                            <span className="text-[15px] font-bold text-arrivio-green">€{totalFees.toLocaleString()}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Total Summary - Subtle but clear */}
-                <div className="pt-2">
-                    <div className="bg-arrivio-green/95 text-[#f2f2f2] p-5 rounded-2xl shadow-xl shadow-arrivio-green/20">
-                        <div className="flex justify-between items-end">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Due now to book</p>
-                                <p className="text-[11px] opacity-50 leading-tight pr-4 font-medium">First month rent & service fees</p>
-                            </div>
-                            <p className="text-3xl font-serif">€{dueNow.toLocaleString()}</p>
-                        </div>
-                    </div>
-                    <p className="mt-4 text-[10px] text-center text-arrivio-green/40 font-medium px-4">
-                        Deposit is settled after signing the contract.
-                    </p>
-                </div>
+            <div className="flex-1 mx-4 border-t border-dashed border-[#0f4c3a]/15 relative">
+              <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-[9px] font-bold text-[#D4A017] uppercase tracking-wider">
+                {calculateDuration(checkIn, checkOut) || "—"}
+              </span>
             </div>
-        </motion.div>
-    );
+            <div className="text-right">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#9ca3af]">Move out</p>
+              <p className="text-sm font-semibold text-[#111827]">{checkOut}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="h-px bg-[#0f4c3a]/5 mx-5" />
+
+        {/* Price breakdown */}
+        <div className="px-5 py-4 space-y-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-[#4b5563]">Monthly rent</span>
+            <span className="font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>€{monthlyTotal.toLocaleString()}</span>
+          </div>
+          <p className="text-[10px] text-[#6b7280]">That's just €{dailyRate}/day — all bills included</p>
+
+          <div className="h-px bg-[#0f4c3a]/5" />
+
+          <div className="flex justify-between">
+            <span className="text-[#4b5563]">Holding deposit</span>
+            <span className="font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>€{holdingDeposit.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between">
+            <div className="flex items-center gap-1">
+              <span className="text-[#4b5563]">Security deposit</span>
+              <div className="relative group/sinfo">
+                <Info size={10} className="text-[#9ca3af]" />
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/sinfo:block z-50">
+                  <div className="bg-[#111827] text-white text-[10px] leading-relaxed rounded-lg px-3 py-2 shadow-lg w-[200px]">
+                    Your security deposit is returned within 14 days of move-out, after a final property inspection.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>€{deposit.toLocaleString()}</span>
+              <span className="text-[8px] text-[#22C55E] font-bold bg-[#22C55E]/10 px-1.5 py-0.5 rounded-full">Refundable</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Due now — dark green */}
+        <div className="mx-5 mb-5 bg-[#0f4c3a] rounded-xl px-4 py-4">
+          <div className="flex justify-between items-end">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">Due now</p>
+              <p className="text-[10px] text-white/40 mt-0.5">Holding deposit to reserve</p>
+            </div>
+            <p className="text-2xl font-bold text-white" style={{ fontVariantNumeric: 'lining-nums' }}>€{holdingDeposit.toLocaleString()}</p>
+          </div>
+          <div className="h-px bg-white/10 my-3" />
+          <div className="flex justify-between items-end">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">Due at move-in</p>
+              <p className="text-[10px] text-white/40 mt-0.5">Rent (−holding) + security deposit</p>
+            </div>
+            <p className="text-lg font-bold text-white/80" style={{ fontVariantNumeric: 'lining-nums' }}>€{dueAtMoveIn.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* Trust badges */}
+        <div className="px-5 pb-4 flex items-center justify-center gap-4">
+          <span className="flex items-center gap-1 text-[9px] font-bold text-[#9ca3af]">
+            <ShieldCheck size={12} className="text-[#22C55E]" /> Secure booking
+          </span>
+          <span className="flex items-center gap-1 text-[9px] font-bold text-[#9ca3af]">
+            <RefreshCcw size={12} className="text-[#22C55E]" /> Deposit refundable
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
 };
 
 export default PropertySummarySidebar;

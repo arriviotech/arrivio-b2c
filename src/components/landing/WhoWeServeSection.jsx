@@ -13,43 +13,40 @@ import {
   Users,
   Building2,
 } from 'lucide-react';
-
-const featureIcons = {
-  // Skilled Professionals
-  "Prime locations": MapPin,
-  "Near business districts": Building2,
-  "Fully furnished": Sofa,
-
-  // Students
-  "Near universities": GraduationCap,
-  "Student-friendly pricing": Wallet,
-  "Study spaces": Monitor,
-
-  // Azubis
-  "Close to training": MapPin,
-  "Affordable options": BadgePercent,
-  "Community support": Users,
-};
-
+import { useLanguage } from '../../context/LanguageContext';
 
 const WhoWeServeSection = () => {
+  const { t } = useLanguage();
+
   const personas = [
     {
-      title: 'Skilled Professionals',
-      description: 'Made for moments of transition; when everything feels new.',
-      features: ['Prime locations', 'Near business districts', 'Fully furnished'],
-      icon: Briefcase, // Specific icon for visual storytelling
+      title: t("whoWeServe.professionals"),
+      description: t("whoWeServe.professionalsDesc"),
+      features: [
+        { label: t("whoWeServe.professionalsTag1"), icon: MapPin },
+        { label: t("whoWeServe.professionalsTag2"), icon: Building2 },
+        { label: t("whoWeServe.professionalsTag3"), icon: Sofa },
+      ],
+      icon: Briefcase,
     },
     {
-      title: 'Students',
-      description: 'Ideal living spaces for students pursuing their education abroad.',
-      features: ['Near universities', 'Student-friendly pricing', 'Study spaces'],
+      title: t("whoWeServe.students"),
+      description: t("whoWeServe.studentsDesc"),
+      features: [
+        { label: t("whoWeServe.studentsTag1"), icon: GraduationCap },
+        { label: t("whoWeServe.studentsTag2"), icon: Wallet },
+        { label: t("whoWeServe.studentsTag3"), icon: Monitor },
+      ],
       icon: GraduationCap,
     },
     {
-      title: 'Azubis',
-      description: 'Comfortable housing for apprentices starting their careers.',
-      features: ['Close to training', 'Affordable options', 'Community support'],
+      title: t("whoWeServe.azubis"),
+      description: t("whoWeServe.azubisDesc"),
+      features: [
+        { label: t("whoWeServe.azubisTag1"), icon: MapPin },
+        { label: t("whoWeServe.azubisTag2"), icon: BadgePercent },
+        { label: t("whoWeServe.azubisTag3"), icon: Users },
+      ],
       icon: Sparkles,
     },
   ];
@@ -90,7 +87,7 @@ const WhoWeServeSection = () => {
           >
             <div className="w-8 h-[1px] bg-[#0f4c3a]"></div>
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#111827] font-sans">
-              Who We Serve
+              {t("whoWeServe.label")}
             </span>
             <div className="w-8 h-[1px] bg-[#0f4c3a]"></div>
           </motion.div>
@@ -102,8 +99,8 @@ const WhoWeServeSection = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="font-serif text-4xl md:text-5xl lg:text-6xl text-[#1A1A1A] leading-tight"
           >
-            Designed for <br />
-            <span className="italic text-[#111827]">Every Ambition.</span>
+            {t("whoWeServe.title1")} <br />
+            <span className="italic text-[#111827]">{t("whoWeServe.title2")}</span>
           </motion.h2>
         </div>
 
@@ -152,23 +149,20 @@ const WhoWeServeSection = () => {
 
                   {/* Features List */}
                   <ul className="space-y-4 mt-auto">
-                    {persona.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start gap-3 group/item">
-                        {(() => {
-                          const Icon = featureIcons[feature] || CheckCircle;
-                          return (
-                            <Icon
-                              size={18}
-                              className="text-[#9ca3af] flex-shrink-0 mt-0.5 group-hover:text-[#111827] transition-colors"
-                            />
-                          );
-                        })()}
-
-                        <span className="font-sans text-sm text-[#1A1A1A]/70 group-hover:text-[#1A1A1A] transition-colors font-medium">
-                          {feature}
-                        </span>
-                      </li>
-                    ))}
+                    {persona.features.map((feature, featureIndex) => {
+                      const Icon = feature.icon || CheckCircle;
+                      return (
+                        <li key={featureIndex} className="flex items-start gap-3 group/item">
+                          <Icon
+                            size={18}
+                            className="text-[#9ca3af] flex-shrink-0 mt-0.5 group-hover:text-[#111827] transition-colors"
+                          />
+                          <span className="font-sans text-sm text-[#1A1A1A]/70 group-hover:text-[#1A1A1A] transition-colors font-medium">
+                            {feature.label}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
 
                 </div>

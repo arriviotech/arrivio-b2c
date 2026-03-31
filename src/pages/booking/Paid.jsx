@@ -1,230 +1,296 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import OptimizedImage from "../../components/common/OptimizedImage";
+import { SIDEBAR_SIZES } from "../../utils/imageUtils";
 import {
   ArrowRight,
   Download,
   CheckCircle,
-  ShieldCheck,
-  LayoutDashboard
+  Clock,
+  ClipboardList,
+  PenTool,
+  Home,
+  ArrowLeft,
+  Info,
 } from "lucide-react";
+import { motion } from "framer-motion";
+import BookingStepper from "../../components/booking/BookingStepper";
+import { calculateDuration } from "../../utils/dateUtils";
 
-/* =========================================================
-   PRICE BREAKDOWN (same as payment page)
-========================================================= */
-const DetailedPriceBreakdown = ({ state, theme = "dark" }) => {
-  const textColor =
-    theme === "dark" ? "text-[#f2f2f2]" : "text-[#111827]";
-  const labelColor =
-    theme === "dark" ? "text-[#f2f2f2]/70" : "text-[#374151]";
-  const borderColor =
-    theme === "dark" ? "border-white/10" : "border-[#0f4c3a]/10";
-
-  const monthlyTotal = Number(state?.monthlyTotal) || 0;
-  const bookingFee = Number(state?.bookingFee) || Number(state?.booking_fee) || 0;
-  const cleaningFee = Number(state?.cleaningFee) || Number(state?.cleaning_fee) || 0;
-  const payNow = monthlyTotal + bookingFee + cleaningFee;
-
-  return (
-    <div className="space-y-3 text-xs w-full text-left">
-      <div className={`flex justify-between items-center ${textColor}`}>
-        <span className={labelColor}>First Month Rent</span>
-        <span className="font-semibold tracking-wide">€{monthlyTotal.toLocaleString()}</span>
-      </div>
-
-      <div className={`border-t ${borderColor}`} />
-
-      <div className={`flex justify-between items-center ${textColor}`}>
-        <span className={labelColor}>Booking Fee</span>
-        <span className="font-semibold tracking-wide">€{bookingFee.toLocaleString()}</span>
-      </div>
-
-      <div className={`flex justify-between items-center ${textColor}`}>
-        <span className={labelColor}>Cleaning Fee</span>
-        <span className="font-semibold tracking-wide">€{cleaningFee.toLocaleString()}</span>
-      </div>
-
-      <div className="pt-2 flex justify-between items-center font-bold text-green-400">
-        <span className="uppercase tracking-wider text-[10px]">Total Paid</span>
-        <span className="text-sm">€{payNow.toLocaleString()}</span>
-      </div>
-    </div>
-  );
-};
-
-/* =========================================================
-   PAID PAGE
-========================================================= */
-/* =========================================================
-   PAID PAGE
-========================================================= */
 const Paid = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  // ✅ SAFE FALLBACK FOR CASHFREE REDIRECT
   const bookingData =
     state ||
     JSON.parse(localStorage.getItem("arrivio_booking")) ||
     {};
 
-  const payNow =
-    (Number(bookingData.monthlyTotal) || 0) +
-    (Number(bookingData.bookingFee) || Number(bookingData.booking_fee) || 0) +
-    (Number(bookingData.cleaningFee) || Number(bookingData.cleaning_fee) || 0);
+  const holdingDeposit = Number(bookingData.holdingDeposit) || 150;
+  const monthlyRent = Number(bookingData.monthlyTotal) || 0;
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const startDateObj = bookingData.checkIn ? new Date(bookingData.checkIn) : null;
+  const endDateObj = bookingData.checkOut ? new Date(bookingData.checkOut) : null;
+  const duration = calculateDuration(bookingData.checkIn, bookingData.checkOut);
 
-  const downloadInvoice = () => {
+  const downloadReceipt = () => {
     const blob = new Blob(
-      [
-        `INVOICE
+      [`ARRIVIO HOLDING DEPOSIT RECEIPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Property: ${bookingData.title}
-Amount Paid: €${payNow}
-Check-in: ${bookingData.checkIn}
-Check-out: ${bookingData.checkOut}
+Move-in: ${bookingData.checkIn}
+Move-out: ${bookingData.checkOut}
+Monthly Rent: €${monthlyRent}
 
-Thank you for booking with Arrivio.`
-      ],
+Holding Deposit Paid: €${holdingDeposit}
+Status: Reserved — Pending Verification
+
+Note: This amount will be deducted from your first month's rent upon move-in.
+
+Date: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+
+Thank you for choosing Arrivio.`],
       { type: "text/plain;charset=utf-8;" }
     );
-
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "invoice.txt";
+    link.download = `arrivio-receipt-${Date.now()}.txt`;
     link.click();
   };
 
+  const nextSteps = [
+    { icon: ClipboardList, title: "Complete application", desc: "Upload ID, proof of income & personal details", color: "text-[#0f4c3a]", bg: "bg-[#0f4c3a]/5", active: true },
+    { icon: PenTool, title: "Sign the lease", desc: "Digital signature via DocuSign", color: "text-[#0f4c3a]", bg: "bg-[#0f4c3a]/5", active: false },
+    { icon: Home, title: "Move in!", desc: "Collect your keys and settle in", color: "text-[#22C55E]", bg: "bg-[#22C55E]/10", active: false },
+  ];
+
   return (
-    <div className="min-h-screen w-full bg-[#f2f2f2] flex flex-col md:flex-row overflow-hidden font-sans text-[#111827]">
+    <div className="min-h-screen bg-[#f2f2f2]">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10 pt-24 sm:pt-28 pb-20">
 
-      {/* LEFT COLUMN - Message & Actions */}
-      <div className="w-full md:w-1/2 lg:w-[45%] flex flex-col justify-center px-8 md:px-14 py-12 md:py-0 relative z-10">
-        <div className="max-w-md mx-auto md:mx-0 w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
-
-          {/* Success Icon */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="h-12 w-12 rounded-full bg-green-600/10 flex items-center justify-center text-green-700">
-              <CheckCircle size={28} strokeWidth={2.5} />
-            </div>
-            <h2 className="text-3xl md:text-4xl font-serif font-medium tracking-tight text-[#111827]">
-              Payment Successful
-            </h2>
+        {/* Stepper */}
+        <div className="flex justify-center mb-10">
+          <div className="w-full max-w-lg">
+            <BookingStepper currentStep={3} />
           </div>
-
-          <div className="space-y-6 border-l-2 border-[#0f4c3a]/10 pl-6 mb-10">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#4b5563] mb-1">
-                Status
-              </p>
-              <p className="text-sm font-semibold text-[#111827]">
-                Reserved — Pending Verification
-              </p>
-            </div>
-
-            <p className="text-sm text-[#374151] leading-relaxed max-w-sm">
-              You’re just a few minutes away from completing your booking.
-              Fill in the remaining details to finalize everything.
-            </p>
-
-            <div className="bg-[#0f4c3a]/5 p-4 rounded-lg border border-[#0f4c3a]/5">
-              <p className="text-sm text-[#1f2937] leading-relaxed">
-                ⚠️ Please note: You have <strong>48 hours</strong> to complete your profile verification to confirm your reservation.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => {
-                // Save application to local storage for Profile page
-                const pendingApps = JSON.parse(localStorage.getItem("my_applications") || "[]");
-                const newApp = { ...bookingData, status: "In Progress", paymentStatus: "Paid", date: new Date().toISOString() };
-
-                // Avoid duplicates
-                if (!pendingApps.some(app => app.title === newApp.title)) {
-                  pendingApps.push(newApp);
-                  localStorage.setItem("my_applications", JSON.stringify(pendingApps));
-                }
-
-                // Also save as current for immediate access
-                localStorage.setItem("current_application", JSON.stringify(bookingData));
-
-                navigate("/application/details", { state: bookingData });
-              }}
-              className="group w-full py-4 bg-[#0f4c3a] text-[#f2f2f2] rounded-xl text-sm font-medium tracking-wide flex items-center justify-center gap-3 hover:bg-[#0a3a2b] hover:scale-[1.01] transition-all duration-300 shadow-xl shadow-[#0f4c3a]/10"
-            >
-              Continue Application <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </button>
-
-            <button
-              onClick={downloadInvoice}
-              className="w-full py-3 bg-transparent border border-[#0f4c3a]/20 text-[#111827] rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-white/50 hover:border-[#0f4c3a]/40 transition-colors"
-            >
-              <Download size={14} />
-              Download Receipt
-            </button>
-
-            <div className="pt-2 text-center">
-              <p className="text-[10px] text-[#6b7280] mb-2">
-                Need to finish later? You can return to this form at any time.
-              </p>
-              <button
-                onClick={() => navigate("/")}
-                className="w-full py-3 bg-transparent text-[#4b5563] rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#0f4c3a]/5 transition-colors"
-              >
-                <LayoutDashboard size={14} />
-                Return to Dashboard
-              </button>
-            </div>
-          </div>
-
         </div>
-      </div>
 
-      {/* RIGHT COLUMN - Booking Summary Card */}
-      <div className="hidden md:flex w-1/2 lg:w-[55%] bg-[#212E24] relative items-center justify-center overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        {/* Decorative Background Elements */}
-        <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent opacity-50"></div>
-        <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-[#2F5D50]/30 rounded-full blur-3xl"></div>
+          {/* ═══ LEFT COLUMN ═══ */}
+          <div className="lg:col-span-7 space-y-6">
 
-        <div className="relative w-full max-w-sm">
-          <div className="flex items-center gap-2 mb-6 opacity-80">
-            <div className="h-[1px] w-8 bg-[#f2f2f2]"></div>
-            <span className="text-xs font-serif italic text-[#f2f2f2]">Your upcoming stay</span>
-          </div>
+            {/* Success card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+              className="bg-[#0f4c3a] rounded-2xl shadow-lg overflow-hidden relative"
+            >
+              {/* Decorative circles */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.04] rounded-full -translate-y-12 translate-x-12" />
+              <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/[0.03] rounded-full translate-y-8 -translate-x-8" />
 
-          <div className="bg-[#0f4c3a]/40 backdrop-blur-md rounded-2xl overflow-hidden border border-white/5 shadow-2xl">
-            {/* Image Header */}
-            <div className="relative h-48 w-full group overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0f4c3a] to-transparent z-10 opacity-60"></div>
-              <img
-                src={bookingData.image}
-                alt={bookingData.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute bottom-4 left-4 z-20">
-                <h4 className="font-serif text-xl text-[#f2f2f2] leading-tight shadow-sm">
-                  {bookingData.title}
-                </h4>
+              <div className="px-6 py-6 relative">
+                {/* Animated checkmark */}
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="w-14 h-14 relative flex items-center justify-center">
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.2, duration: 0.4, ease: "easeOut" }}
+                      className="absolute inset-0 rounded-full border-[3px] border-[#22C55E]/30"
+                    />
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
+                      className="absolute inset-1 rounded-full bg-[#22C55E] shadow-lg shadow-[#22C55E]/30"
+                    />
+                    <motion.svg
+                      width="24" height="24" viewBox="0 0 24 24" fill="none"
+                      stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+                      className="relative z-10"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.7, duration: 0.3 }}
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </motion.svg>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-serif text-white">Payment successful!</h2>
+                    <p className="text-[12px] text-white/60 mt-0.5">Your unit is now reserved</p>
+                  </div>
+                </div>
+
+                {/* Amount paid */}
+                <div className="flex items-center justify-between bg-white/10 rounded-xl px-4 py-3 mb-4">
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-white/50">Amount paid</p>
+                    <p className="text-[10px] text-white/40 mt-0.5">Holding deposit</p>
+                  </div>
+                  <span className="text-2xl font-bold text-white" style={{ fontVariantNumeric: 'lining-nums' }}>€{holdingDeposit.toLocaleString()}</span>
+                </div>
+
+                {/* Status bar */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D4A017] opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D4A017]"></span>
+                    </span>
+                    <span className="text-[11px] font-semibold text-white/80">Reserved — Pending Verification</span>
+                  </div>
+                  <span className="flex items-center gap-1 px-2.5 py-1 bg-[#D4A017]/20 text-[#D4A017] rounded-full text-[9px] font-bold uppercase tracking-wider">
+                    <Clock size={10} /> 48h left
+                  </span>
+                </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Price Content */}
-            <div className="p-6 bg-[#212E24]">
-              <DetailedPriceBreakdown state={bookingData} theme="dark" />
-            </div>
+            {/* Property card */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="bg-white rounded-2xl border border-[#0f4c3a]/5 shadow-sm overflow-hidden"
+            >
+              <div className="relative h-32 overflow-hidden">
+                <OptimizedImage src={bookingData.image} alt={bookingData.title} width={400} sizes={SIDEBAR_SIZES} className="w-full h-full" imgClassName="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                <div className="absolute bottom-3 left-4 right-4">
+                  <p className="text-base font-serif text-white leading-tight">{bookingData.title}</p>
+                  <p className="text-[10px] text-white/70 mt-0.5">
+                    {bookingData.unitNumber ? `Unit ${bookingData.unitNumber}` : ''}{bookingData.city ? ` · ${bookingData.city}` : ''}
+                  </p>
+                </div>
+              </div>
+              <div className="px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-[11px]">
+                  <span className="font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>
+                    {startDateObj ? `${startDateObj.getDate()} ${MONTHS[startDateObj.getMonth()]} ${startDateObj.getFullYear()}` : bookingData.checkIn}
+                  </span>
+                  <span className="text-[#9ca3af]">→</span>
+                  <span className="font-bold text-[#111827]" style={{ fontVariantNumeric: 'lining-nums' }}>
+                    {endDateObj ? `${endDateObj.getDate()} ${MONTHS[endDateObj.getMonth()]} ${endDateObj.getFullYear()}` : bookingData.checkOut}
+                  </span>
+                </div>
+                {duration && <span className="text-[9px] font-bold text-[#D4A017] bg-[#D4A017]/10 px-2 py-0.5 rounded-full">{duration}</span>}
+              </div>
+            </motion.div>
+
+            {/* 48h warning */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-[#D4A017]/5 border border-[#D4A017]/15 rounded-2xl px-5 py-4 flex gap-3 items-start"
+            >
+              <Clock size={18} className="text-[#D4A017] shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-[#111827]">Complete within 48 hours</p>
+                <p className="text-[11px] text-[#6b7280] leading-relaxed mt-0.5">
+                  Please complete your application and sign the lease within 48 hours to confirm your reservation. If not completed in time, your booking will be cancelled and deposit refunded.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Payment summary */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="bg-white rounded-2xl border border-[#22C55E]/20 shadow-sm p-5 border-l-4 border-l-[#22C55E]"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#22C55E]">Payment received</p>
+                </div>
+                <button onClick={downloadReceipt} className="flex items-center gap-1 text-[10px] font-bold text-[#0f4c3a] hover:underline">
+                  <Download size={11} /> Download receipt
+                </button>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-[#4b5563]">Holding deposit</span>
+                <span className="font-bold text-[#22C55E]" style={{ fontVariantNumeric: 'lining-nums' }}>€{holdingDeposit.toLocaleString()} paid</span>
+              </div>
+              <p className="text-[10px] text-[#9ca3af] mt-1">Deducted from your first month's rent upon move-in</p>
+            </motion.div>
+
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-3"
+            >
+              <button
+                onClick={() => {
+                  const pendingApps = JSON.parse(localStorage.getItem("my_applications") || "[]");
+                  const newApp = { ...bookingData, status: "In Progress", paymentStatus: "Paid", date: new Date().toISOString() };
+                  if (!pendingApps.some(app => app.title === newApp.title)) {
+                    pendingApps.push(newApp);
+                    localStorage.setItem("my_applications", JSON.stringify(pendingApps));
+                  }
+                  localStorage.setItem("current_application", JSON.stringify(bookingData));
+                  navigate("/application/details", { state: bookingData });
+                }}
+                className="w-full py-3.5 bg-[#0f4c3a] text-[#f2f2f2] rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#0a3a2b] transition-colors"
+              >
+                Continue to application <ArrowRight size={14} />
+              </button>
+
+              <p className="text-[10px] text-[#9ca3af] text-center">
+                Or <button onClick={() => navigate("/")} className="text-[#0f4c3a] font-semibold hover:underline underline-offset-2">complete later from your dashboard</button> — you have 48 hours.
+              </p>
+            </motion.div>
           </div>
 
-          {/* Badges */}
-          <div className="mt-6 flex gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[#f2f2f2] text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">
-              <ShieldCheck size={12} className="text-green-400" />
-              Secure Booking
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[#f2f2f2] text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">
-              <CheckCircle size={12} className="text-green-400" />
-              Instant Confirmation
+          {/* ═══ RIGHT COLUMN ═══ */}
+          <div className="lg:col-span-5 hidden lg:block">
+            <div className="sticky top-24 space-y-4">
+
+              {/* What's next */}
+              <div className="bg-white rounded-2xl border border-[#0f4c3a]/5 shadow-sm p-5">
+                <h3 className="text-lg font-serif text-[#111827] mb-5">What's next</h3>
+                <div className="space-y-0">
+                  {nextSteps.map((item, i) => {
+                    const Icon = item.icon;
+                    return (
+                      <div key={i} className="flex gap-3">
+                        <div className="flex flex-col items-center">
+                          <div className={`w-9 h-9 rounded-full ${item.bg} flex items-center justify-center shrink-0 ${item.active ? 'ring-2 ring-[#0f4c3a]/20' : ''}`}>
+                            <Icon size={16} className={item.color} />
+                          </div>
+                          {i < nextSteps.length - 1 && <div className="w-px flex-1 bg-[#e5e7eb] min-h-[20px]" />}
+                        </div>
+                        <div className="pb-4 -mt-0.5">
+                          <p className="text-sm font-semibold text-[#111827]">{item.title}</p>
+                          <p className="text-[10px] text-[#6b7280] leading-relaxed">{item.desc}</p>
+                          {item.active && (
+                            <span className="inline-block mt-1 text-[8px] font-bold text-[#0f4c3a] bg-[#0f4c3a]/10 px-2 py-0.5 rounded-full uppercase tracking-wider">Up next</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Helpful info */}
+              <div className="bg-[#f9f9f7] rounded-2xl border border-[#0f4c3a]/5 p-4 flex items-start gap-2">
+                <Info size={14} className="text-[#9ca3af] shrink-0 mt-0.5" />
+                <p className="text-[10px] text-[#6b7280] leading-relaxed">
+                  Your holding deposit is <span className="font-semibold text-[#4b5563]">fully refundable</span> if your application is not approved. It will be <span className="font-semibold text-[#4b5563]">deducted from your first month's rent</span> upon move-in.
+                </p>
+              </div>
+
             </div>
           </div>
         </div>
@@ -234,5 +300,3 @@ Thank you for booking with Arrivio.`
 };
 
 export default Paid;
-
-
