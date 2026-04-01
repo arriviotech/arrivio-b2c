@@ -124,12 +124,6 @@ const ApplicationDetail = () => {
     <div className="space-y-5">
       <SEO title="Application Details" path={`/profile/applications/${id}`} />
 
-      {/* Back */}
-      <button onClick={() => navigate("/profile/applications")} className="flex items-center gap-2 text-[#4b5563] hover:text-[#111827] transition-colors group">
-        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-        <span className="text-xs font-bold uppercase tracking-widest">Back to Applications</span>
-      </button>
-
       {/* Status Banner */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
         className={`rounded-2xl border p-5 md:p-6 ${status.bg} border-transparent`}

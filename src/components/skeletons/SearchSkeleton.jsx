@@ -43,7 +43,7 @@ const PropertyCardSkeleton = () => (
  * Full Search page loading skeleton.
  */
 const SearchSkeleton = () => (
-    <div className="min-h-screen w-full bg-[#f2f2f2] pt-20 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen w-full bg-[#f2f2f2] pt-16 md:pt-20 flex flex-col relative overflow-hidden">
         {/* 1. STICKY FILTER BAR PLACEHOLDER (Exact Match to SearchFiltersBar frame) */}
         <div className="sticky top-0 z-30 bg-[#f2f2f2] px-4 md:px-8 py-3 border-b border-[#0f4c3a]/5">
             <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
