@@ -77,8 +77,8 @@ const AppRoutes = () => {
                 <Route path="/auth/callback" element={<AuthCallback />} />
 
                 {/* BUSINESS (EXTERNAL REDIRECTS) */}
-                <Route path="/business" element={<ExternalRedirect url="https://arrivio-business.vercel.app/" />} />
-                <Route path="/employers" element={<ExternalRedirect url="https://arrivio-business.vercel.app/" />} />
+                <Route path="/business" element={<ExternalRedirect url="https://arrivio-b2b.vercel.app/" />} />
+                <Route path="/employers" element={<ExternalRedirect url="https://arrivio-b2b.vercel.app/" />} />
                 <Route path="/careers" element={<Careers />} />
                 <Route path="/contact" element={<Contact />} />
 

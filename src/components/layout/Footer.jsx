@@ -15,7 +15,7 @@ const Footer = () => {
          { name: t("nav.community"), path: '/#community' },
          { name: t("footer.careers"), path: '/careers' },
          { name: t("footer.contact"), path: '/contact' },
-         { name: t("nav.forBusinesses"), path: 'https://arrivio-business.vercel.app/' },
+         { name: t("nav.forBusinesses"), path: 'https://arrivio-b2b.vercel.app/' },
       ],
       [t("footer.locations")]: [
          { name: 'Aachen', path: '/cities' },

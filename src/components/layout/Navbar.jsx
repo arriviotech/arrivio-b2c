@@ -89,7 +89,7 @@ const Navbar = ({ variant = "app" }) => {
   const landingLinks = [
     { name: t("nav.community"), path: '/#community' },
     { name: t("nav.pricing"), path: '/#living-spaces' },
-    { name: t("nav.forBusinesses"), path: 'https://arrivio-business.vercel.app/' },
+    { name: t("nav.forBusinesses"), path: 'https://arrivio-b2b.vercel.app/' },
   ];
 
   // App center links (rolling cursor)
