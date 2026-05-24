@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react";
-import { getUnitBySlug } from "../services/units.service";
+import { getUnit } from "../services/units.service";
 
-export function useUnit(slug) {
+// `idOrSlug` is the URL param. The units table has both `id` (UUID) and `slug` (nullable),
+// and the navigation falls back to `unit.id` when `unit.slug` is NULL. The fetch detects
+// which one it got and queries the right column.
+export function useUnit(idOrSlug) {
   const [unit, setUnit] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!slug) return;
+    if (!idOrSlug) return;
     setLoading(true);
-    getUnitBySlug(slug)
+    getUnit(idOrSlug)
       .then(setUnit)
       .catch(() => setUnit(null))
       .finally(() => setLoading(false));
-  }, [slug]);
+  }, [idOrSlug]);
 
   return { unit, loading };
 }
