@@ -1,6 +1,14 @@
 import { supabase } from "../client";
 
-export async function getUnitBySlug(slug) {
+// Units have BOTH a UUID `id` and an optional `slug` column (added in migration 11).
+// The backfill set slugs on units that existed at that point, but NEW units inserted
+// without an explicit slug have NULL — those navigate via UUID instead.
+// So callers may pass either a UUID (new units) or a slug (older backfilled units).
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const isUUID = (v) => typeof v === "string" && UUID_RE.test(v);
+
+export async function getUnit(idOrSlug) {
+  const column = isUUID(idOrSlug) ? "id" : "slug";
   const { data, error } = await supabase
     .from("units")
     .select(`
@@ -56,16 +64,20 @@ export async function getUnitBySlug(slug) {
         status
       )
     `)
-    .eq("slug", slug)
+    .eq(column, idOrSlug)
     .single();
 
   if (error) {
-    console.error("Error fetching unit:", error);
+    console.error(`Error fetching unit by ${column}:`, error);
     throw error;
   }
 
   return normalizeUnit(data);
 }
+
+// Back-compat aliases — keep old names working for any imports we haven't touched yet.
+export const getUnitById = getUnit;
+export const getUnitBySlug = getUnit;
 
 function normalizeUnit(data) {
   const property = data.properties || {};
