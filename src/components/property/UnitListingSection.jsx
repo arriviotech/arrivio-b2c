@@ -2,13 +2,7 @@ import React, { useState, useRef } from "react";
 import { BedDouble, Ruler, Layers, Users, Sofa, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import OptimizedImage from "../common/OptimizedImage";
 import { CARD_SIZES } from "../../utils/imageUtils";
-
-const UNIT_TYPE_LABELS = {
-  studio: "Studio",
-  one_bedroom: "1 Bedroom",
-  two_bedroom: "2 Bedroom",
-  shared_room: "Shared Room",
-};
+import { unitTypeLabel, canonicalUnitType, distinctUnitTypes } from "../../utils/unitTypes";
 
 const TIER_STYLES = {
   standard: { label: "Standard", classes: "bg-[#f2f2f2] text-[#111827] border border-[#0f4c3a]/20" },
@@ -30,7 +24,7 @@ const getFloorLabel = (floor) => {
 };
 
 const getUnitDisplayName = (unit) => {
-  return UNIT_TYPE_LABELS[unit.unit_type] || unit.unit_type;
+  return unitTypeLabel(unit.unit_type);
 };
 
 const ImageCarousel = ({ images, alt, className = "aspect-[16/9]", children }) => {
@@ -289,10 +283,10 @@ const UnitListingSection = ({ property, onSelectUnit }) => {
 
   if (units.length === 0) return null;
 
-  const unitTypes = [...new Set(units.map((u) => u.unit_type))];
+  const unitTypes = distinctUnitTypes(units);
 
   const filteredUnits = units
-    .filter((u) => filter === "all" || u.unit_type === filter)
+    .filter((u) => filter === "all" || canonicalUnitType(u.unit_type) === filter)
     .sort((a, b) => {
       // Available first, then by price
       if (a.status === "available" && b.status !== "available") return -1;
@@ -339,7 +333,7 @@ const UnitListingSection = ({ property, onSelectUnit }) => {
                   : "bg-white border border-[#0f4c3a]/10 text-[#4b5563] hover:border-[#0f4c3a]/30"
               }`}
             >
-              {UNIT_TYPE_LABELS[type] || type} ({units.filter((u) => u.unit_type === type).length})
+              {unitTypeLabel(type)} ({units.filter((u) => canonicalUnitType(u.unit_type) === type).length})
             </button>
           ))}
         </div>

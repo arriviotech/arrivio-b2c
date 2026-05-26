@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="No photo available">
+  <rect width="400" height="300" fill="#eceeec"/>
+  <g fill="none" stroke="#0f4c3a" stroke-opacity="0.25" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M150 150 L200 110 L250 150 L250 195 L150 195 Z"/>
+    <path d="M186 195 L186 168 L214 168 L214 195"/>
+  </g>
+  <text x="200" y="235" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="600" letter-spacing="0.5" fill="#0f4c3a" fill-opacity="0.35" text-anchor="middle">Arrivio</text>
+</svg>

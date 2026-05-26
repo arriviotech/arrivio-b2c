@@ -10,6 +10,7 @@ import { supabase } from "../../supabase/client";
 import { useAuth } from "../../context/AuthContext";
 import OptimizedImage from "../../components/common/OptimizedImage";
 import { THUMBNAIL_SIZES } from "../../utils/imageUtils";
+import { unitTypeLabel } from "../../utils/unitTypes";
 import SEO from "../../components/common/SEO";
 
 const STATUS_CONFIG = {
@@ -106,7 +107,7 @@ const ApplicationDetail = () => {
       applicationId: app.id,
       propertyId: property.id,
       unitId: unit.id || app.unit_id,
-      title: `${property.name}. ${unit.unit_type?.replace(/_/g, " ")}`,
+      title: `${property.name}. ${unitTypeLabel(unit.unit_type)}`,
       propertyName: property.name,
       unitNumber: unit.unit_number,
       unitType: unit.unit_type,
@@ -151,7 +152,7 @@ const ApplicationDetail = () => {
           <div className="flex-1 min-w-0">
             <h3 className="font-serif text-lg text-[#111827] truncate">{property.name}</h3>
             <p className="text-xs text-[#6b7280] mt-0.5">
-              {unit.unit_type?.replace(/_/g, " ")}{unit.unit_number ? ` · Unit ${unit.unit_number}` : ""}{property.city ? ` · ${property.city}` : ""}
+              {unitTypeLabel(unit.unit_type)}{unit.unit_number ? ` · Unit ${unit.unit_number}` : ""}{property.city ? ` · ${property.city}` : ""}
             </p>
             {property.address_line1 && (
               <p className="text-[10px] text-[#9ca3af] flex items-center gap-1 mt-1">

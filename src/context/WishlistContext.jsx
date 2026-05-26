@@ -4,6 +4,7 @@ import { supabase } from "../supabase/client";
 import { useAuth } from "./AuthContext";
 import toast from "react-hot-toast";
 import { normalizeProperty } from "../supabase/services/properties.service";
+import { unitTypeLabel } from "../utils/unitTypes";
 
 const WishlistContext = createContext();
 
@@ -256,7 +257,6 @@ function normalizeUnitWishlistItem(unit) {
         .sort((a, b) => a.monthly_rent_cents - b.monthly_rent_cents);
     const cheapest = pricing[0];
 
-    const UNIT_TYPE_LABELS = { studio: "Studio", one_bedroom: "1 Bedroom", two_bedroom: "2 Bedroom", shared_room: "Shared Room" };
     const TIER_LABELS = { standard: "Standard", premium: "Premium", executive: "Executive" };
 
     return {
@@ -272,7 +272,7 @@ function normalizeUnitWishlistItem(unit) {
             district: property.district,
             location: property.district ? `${property.district}, ${property.city}` : property.city,
         },
-        unitTypeLabel: UNIT_TYPE_LABELS[unit.unit_type] || unit.unit_type?.replace(/_/g, ' ') || 'Unit',
+        unitTypeLabel: unitTypeLabel(unit.unit_type),
         tierLabel: TIER_LABELS[unit.tier] || unit.tier || 'Standard',
     };
 }

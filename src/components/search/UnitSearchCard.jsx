@@ -3,13 +3,7 @@ import { Ruler, Layers, Users, Sofa, Heart, ChevronLeft, ChevronRight } from "lu
 import { useWishlist } from "../../context/WishlistContext";
 import OptimizedImage from "../common/OptimizedImage";
 import { CARD_SIZES } from "../../utils/imageUtils";
-
-const UNIT_TYPE_LABELS = {
-  studio: "Studio",
-  one_bedroom: "1 Bedroom",
-  two_bedroom: "2 Bedroom",
-  shared_room: "Shared Room",
-};
+import { unitTypeLabel } from "../../utils/unitTypes";
 
 const TIER_STYLES = {
   standard: { label: "Standard", classes: "bg-[#f2f2f2] text-[#111827] border-[#0f4c3a]/20 shadow-sm" },
@@ -114,7 +108,7 @@ const UnitSearchCard = ({ unit, property, onClick }) => {
         {/* Unit type + tier */}
         <div className="flex items-center gap-2 mb-0.5">
           <h3 className="font-serif text-xl sm:text-[17px] leading-[1.3] text-[#111827] group-hover:text-[#1f2937] transition-colors" style={{ fontVariantNumeric: 'lining-nums' }}>
-            {UNIT_TYPE_LABELS[unit.unit_type] || unit.unit_type}
+            {unitTypeLabel(unit.unit_type)}
           </h3>
           <span className={`px-2 py-0.5 rounded text-[10px] sm:text-[8px] font-bold uppercase tracking-wider ${
             unit.tier === 'executive' ? 'bg-[#0f4c3a] text-[#f2f2f2]' :

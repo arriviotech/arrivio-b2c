@@ -9,6 +9,7 @@ import { supabase } from '../../supabase/client';
 import { useAuth } from '../../context/AuthContext';
 import OptimizedImage from '../../components/common/OptimizedImage';
 import { THUMBNAIL_SIZES } from '../../utils/imageUtils';
+import { unitTypeLabel } from '../../utils/unitTypes';
 
 const STATUS_CONFIG = {
   pending_payment: { label: 'Pending Payment', color: 'text-[#D4A017]', bg: 'bg-[#D4A017]/10' },
@@ -71,7 +72,7 @@ const MyApplications = () => {
       applicationId: app.id,
       propertyId: property.id,
       unitId: unit.id,
-      title: `${property.name}. ${unit.unit_type?.replace(/_/g, ' ')}`,
+      title: `${property.name}. ${unitTypeLabel(unit.unit_type)}`,
       propertyName: property.name,
       unitNumber: unit.unit_number,
       unitType: unit.unit_type,
@@ -191,7 +192,7 @@ const MyApplications = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-serif text-sm text-[#111827] truncate">{property.name}</h3>
-                      <p className="text-[9px] text-[#6b7280]">{unit.unit_type?.replace(/_/g, ' ')}{unit.unit_number ? ` · Unit ${unit.unit_number}` : ''}{property.city ? ` · ${property.city}` : ''}</p>
+                      <p className="text-[9px] text-[#6b7280]">{unitTypeLabel(unit.unit_type)}{unit.unit_number ? ` · Unit ${unit.unit_number}` : ''}{property.city ? ` · ${property.city}` : ''}</p>
                       <div className="flex items-center justify-between mt-1.5">
                         <div className="flex items-center gap-1 text-[9px] text-[#9ca3af]">
                           <Calendar size={9} />

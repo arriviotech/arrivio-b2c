@@ -711,7 +711,7 @@ const UserDetails = () => {
                   <div className="bg-white rounded-2xl border border-[#0f4c3a]/5 shadow-sm overflow-hidden">
                     {/* Property image */}
                     <div className="relative h-28 overflow-hidden">
-                      <img src={bookingData.image || "/placeholder-property.jpg"} alt={bookingData.title} className="w-full h-full object-cover" />
+                      <img src={bookingData.image || "/placeholder-property.svg"} alt={bookingData.title} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       <div className="absolute bottom-3 left-4 right-4">
                         <p className="text-sm font-serif text-white leading-tight">{bookingData.title}</p>

@@ -29,6 +29,7 @@ import StickyNav from "../components/property/StickyNav";
 import SimilarProperties from "../components/property/SimilarProperties";
 import PropertyStats from "../components/property/PropertyStats";
 import SEO from "../components/common/SEO";
+import { unitTypeLabel, canonicalUnitType, distinctUnitTypes } from "../utils/unitTypes";
 import NotifyMeButton from "../components/common/NotifyMeButton";
 import ApplicationDetailsSection from "../components/property/ApplicationDetailsSection";
 import UnitListingSection from "../components/property/UnitListingSection";
@@ -39,12 +40,12 @@ import UnitListingSection from "../components/property/UnitListingSection";
 const SECTION_IDS = ["about", "units", "amenities", "policies", "details", "neighborhood"];
 
 // Interactive booking widget (Design 2+3 merged)
-const PropertyWidget = ({ units, unitTypes, allTiers, property, UNIT_TYPE_LABELS, TIER_LABELS, TIER_STYLES, TIER_DOTS }) => {
+const PropertyWidget = ({ units, unitTypes, allTiers, property, TIER_LABELS, TIER_STYLES, TIER_DOTS }) => {
   const [selectedType, setSelectedType] = useState("all");
   const [selectedTier, setSelectedTier] = useState("all");
 
   const filtered = units.filter((u) => {
-    if (selectedType !== "all" && u.unit_type !== selectedType) return false;
+    if (selectedType !== "all" && canonicalUnitType(u.unit_type) !== selectedType) return false;
     if (selectedTier !== "all" && u.tier !== selectedTier) return false;
     return true;
   });
@@ -57,7 +58,7 @@ const PropertyWidget = ({ units, unitTypes, allTiers, property, UNIT_TYPE_LABELS
   // Group filtered units by type for price breakdown
   const typeMap = {};
   filtered.forEach((u) => {
-    const type = u.unit_type;
+    const type = canonicalUnitType(u.unit_type);
     if (!typeMap[type]) typeMap[type] = { prices: [], available: 0, total: 0, tiers: new Set() };
     typeMap[type].total++;
     if (u.status === "available") typeMap[type].available++;
@@ -102,7 +103,7 @@ const PropertyWidget = ({ units, unitTypes, allTiers, property, UNIT_TYPE_LABELS
                 selectedType === type ? "bg-[#0f4c3a] text-white" : "bg-[#f2f2f2] text-[#4b5563] hover:bg-[#e5e5e5]"
               }`}
             >
-              {UNIT_TYPE_LABELS[type] || type}
+              {unitTypeLabel(type)}
             </button>
           ))}
         </div>
@@ -146,7 +147,7 @@ const PropertyWidget = ({ units, unitTypes, allTiers, property, UNIT_TYPE_LABELS
             return (
               <div key={type} className={`flex items-center justify-between py-2 px-3 rounded-xl ${isCheapest ? 'bg-[#0f4c3a]/5 ring-1 ring-[#0f4c3a]/10' : 'bg-[#f9f9f7]'}`}>
                 <div>
-                  <p className="text-sm font-semibold text-[#111827]">{UNIT_TYPE_LABELS[type] || type}</p>
+                  <p className="text-sm font-semibold text-[#111827]">{unitTypeLabel(type)}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className={`text-[10px] font-bold ${data.available > 0 ? 'text-[#22C55E]' : 'text-[#EA4335]'}`}>
                       {data.available > 0 ? `${data.available} available` : 'Occupied'}
@@ -492,7 +493,6 @@ const PropertyDetails = () => {
               {/* Property summary card — Design 2+3: Pricing-focused + Interactive */}
               {(() => {
                 const units = property.units || [];
-                const UNIT_TYPE_LABELS = { studio: "Studio", one_bedroom: "1 Bedroom", two_bedroom: "2 Bedroom", shared_room: "Shared Room" };
                 const TIER_LABELS = { standard: "Standard", premium: "Premium", executive: "Executive" };
                 const TIER_STYLES = {
                   standard: "border-[#0f4c3a]/15 text-[#111827] bg-white",
@@ -501,10 +501,10 @@ const PropertyDetails = () => {
                 };
                 const TIER_DOTS = { standard: "bg-[#9ca3af]", premium: "bg-[#DAA520]", executive: "bg-[#0f4c3a]" };
 
-                const unitTypes = [...new Set(units.map((u) => u.unit_type))];
+                const unitTypes = distinctUnitTypes(units);
                 const allTiers = [...new Set(units.map((u) => u.tier).filter(Boolean))];
 
-                return <PropertyWidget units={units} unitTypes={unitTypes} allTiers={allTiers} property={property} UNIT_TYPE_LABELS={UNIT_TYPE_LABELS} TIER_LABELS={TIER_LABELS} TIER_STYLES={TIER_STYLES} TIER_DOTS={TIER_DOTS} />;
+                return <PropertyWidget units={units} unitTypes={unitTypes} allTiers={allTiers} property={property} TIER_LABELS={TIER_LABELS} TIER_STYLES={TIER_STYLES} TIER_DOTS={TIER_DOTS} />;
               })()}
 
 

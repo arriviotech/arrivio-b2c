@@ -1,4 +1,5 @@
 import { supabase } from "../client";
+import { unitTypeLabel } from "../../utils/unitTypes";
 
 // Units have BOTH a UUID `id` and an optional `slug` column (added in migration 11).
 // The backfill set slugs on units that existed at that point, but NEW units inserted
@@ -147,12 +148,7 @@ function normalizeUnit(data) {
     amenities: Object.keys(amenities).length > 0 ? amenities : null,
 
     // Display helpers
-    unitTypeLabel: {
-      studio: "Studio",
-      one_bedroom: "1 Bedroom Apartment",
-      two_bedroom: "2 Bedroom Apartment",
-      shared_room: "Shared Room",
-    }[data.unit_type] || data.unit_type,
+    unitTypeLabel: unitTypeLabel(data.unit_type),
 
     tierLabel: {
       standard: "Standard",

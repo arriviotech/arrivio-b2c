@@ -391,7 +391,7 @@ const UnitDetailsPage = () => {
 
             {/* NEIGHBORHOOD */}
             <div id="neighborhood" className="pt-10 border-t border-[#0f4c3a]/10 scroll-mt-40">
-              <Neighborhood property={property} />
+              <Neighborhood property={{ ...property, price: unit.price, image: unit.coverImage }} />
             </div>
           </div>
 

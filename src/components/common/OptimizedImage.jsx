@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { getOptimizedUrl, generateSrcSet, DEFAULT_SIZES } from "../../utils/imageUtils";
 
-const FALLBACK_IMAGE = "/placeholder-property.jpg";
+const FALLBACK_IMAGE = "/placeholder-property.svg";
 
 /**
  * OptimizedImage — drop-in <img> replacement with:
