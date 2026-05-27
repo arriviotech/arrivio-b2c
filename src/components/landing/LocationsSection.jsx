@@ -35,10 +35,21 @@ const LocationsSection = () => {
 
   // Fetch counts from DB
   React.useEffect(() => {
+    // Normalize for matching: lowercase, trim, and strip diacritics so the
+    // plain label "Dusseldorf" matches the DB value "Düsseldorf".
+    const norm = (s) =>
+      (s || '').trim().toLowerCase().normalize('NFD').replace(/\p{Mn}/gu, '');
+
     const fetchCounts = async () => {
+      // Only count live, bookable properties — active and not deleted.
+      // Mirrors arrivio-b2b's landing page (and b2c's own search service) so
+      // all surfaces report identical counts; without these filters this query
+      // also counted coming_soon properties (e.g. Berlin/Frankfurt were higher).
       const { data, error } = await supabase
         .from('properties')
-        .select('city');
+        .select('city')
+        .eq('status', 'active')
+        .is('deleted_at', null);
 
       if (error) {
         console.error("Error fetching property counts:", error);
@@ -48,14 +59,14 @@ const LocationsSection = () => {
       // Count properties per city
       const counts = {};
       data.forEach(p => {
-        const city = p.city ? p.city.trim() : "";
-        counts[city] = (counts[city] || 0) + 1;
+        const city = norm(p.city);
+        if (city) counts[city] = (counts[city] || 0) + 1;
       });
 
       // Update locations state
       setLocations(prev => prev.map(loc => ({
         ...loc,
-        count: counts[loc.name] || 0 // Default to 0 if no properties
+        count: counts[norm(loc.name)] || 0 // Default to 0 if no properties
       })));
     };
 
