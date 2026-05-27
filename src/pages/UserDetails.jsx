@@ -13,6 +13,7 @@ import LifestyleDetails from "../components/UserDetails/LifestyleDetails";
 import BookingStepper from "../components/booking/BookingStepper";
 import { useAuth } from "../context/AuthContext";
 import { calculateDuration } from "../utils/dateUtils";
+import { DIAL_CODES_LONGEST_FIRST } from "../utils/countries";
 import { supabase } from "../supabase/client";
 import api from "../api/client";
 
@@ -106,12 +107,11 @@ const UserDetails = () => {
           if (profile) {
             const nameParts = (profile.full_name || "").split(" ");
 
-            // Parse phone + country code from profile
-            const CODES = ["+49", "+91", "+44", "+33", "+86", "+1"];
+            // Parse phone + country code from profile (longest dial code first)
             let profilePhone = profile.phone || "";
             let profileCode = "+49";
             if (profilePhone && profilePhone.startsWith("+")) {
-              const matched = CODES.find(code => profilePhone.startsWith(code));
+              const matched = DIAL_CODES_LONGEST_FIRST.find(code => profilePhone.startsWith(code));
               if (matched) {
                 profileCode = matched;
                 profilePhone = profilePhone.slice(matched.length).trim();
