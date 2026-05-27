@@ -1,4 +1,5 @@
 import { supabase } from "../client";
+import { unitTypeLabel } from "../../utils/unitTypes";
 
 /*
   Normalize DB → frontend shape
@@ -82,7 +83,7 @@ export function normalizeProperty(data) {
           : `${minFloor}–${maxFloor}`,
         beds: maxBeds,
         baths: 1,
-        unitTypes: unitTypes.map((t) => t?.replace(/_/g, ' ')),
+        unitTypes: [...new Set(unitTypes.map((t) => unitTypeLabel(t)))],
         totalUnits: units.length,
       };
     })(),

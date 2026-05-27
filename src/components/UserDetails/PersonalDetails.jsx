@@ -3,6 +3,7 @@ import { User, Calendar } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import VerifyOtpModal from "../common/VerifyOtpModal";
+import CountrySelect from "../common/CountrySelect";
 
 const CustomDobInput = forwardRef(({ value, onClick, placeholder }, ref) => (
   <button
@@ -98,19 +99,12 @@ const PersonalDetails = ({ formData, handleChange, setFormData, countryCode, set
             {verifiedFields.phone ? <VerifiedBadge /> : formData.phone && <VerifyButton onClick={() => setVerifyModal('phone')} />}
           </label>
           <div className="flex gap-2">
-            <select
+            <CountrySelect
+              mode="phone"
               value={countryCode}
-              onChange={(e) => setCountryCode(e.target.value)}
-              className="bg-[#f9f9f7] border border-[#0f4c3a]/10 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#0f4c3a]/30 transition-colors text-[#111827] font-medium shrink-0"
+              onChange={setCountryCode}
               disabled={!!verifiedFields.phone}
-            >
-              <option value="+49">🇩🇪 +49</option>
-              <option value="+1">🇺🇸 +1</option>
-              <option value="+44">🇬🇧 +44</option>
-              <option value="+33">🇫🇷 +33</option>
-              <option value="+91">🇮🇳 +91</option>
-              <option value="+86">🇨🇳 +86</option>
-            </select>
+            />
             <input
               type="tel" name="phone" required
               value={formData.phone || ""} onChange={handleChange}

@@ -10,6 +10,7 @@ import { supabase } from "../../supabase/client";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 import BookingDetailSkeleton from "../../components/skeletons/BookingDetailSkeleton";
+import { unitTypeLabel } from "../../utils/unitTypes";
 
 const BOOKING_STATUS = {
   active: { label: "Active", color: "text-[#16a34a]", bg: "bg-[#22C55E]/10", icon: CheckCircle },
@@ -174,7 +175,7 @@ const BookingDetail = () => {
           )}
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mb-4">
-            <StatPill icon={DoorOpen} label={unit.unit_type?.replace(/_/g, ' ')} />
+            <StatPill icon={DoorOpen} label={unitTypeLabel(unit.unit_type)} />
             <StatPill icon={Ruler} label={`${unit.size_sqm} m²`} />
             <StatPill icon={Layers} label={unit.floor === 0 ? 'Ground' : `Floor ${unit.floor}`} />
             <StatPill icon={Users} label={`Max ${unit.max_occupants}`} />

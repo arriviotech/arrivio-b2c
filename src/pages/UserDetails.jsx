@@ -13,6 +13,7 @@ import LifestyleDetails from "../components/UserDetails/LifestyleDetails";
 import BookingStepper from "../components/booking/BookingStepper";
 import { useAuth } from "../context/AuthContext";
 import { calculateDuration } from "../utils/dateUtils";
+import { DIAL_CODES_LONGEST_FIRST } from "../utils/countries";
 import { supabase } from "../supabase/client";
 import api from "../api/client";
 
@@ -106,12 +107,11 @@ const UserDetails = () => {
           if (profile) {
             const nameParts = (profile.full_name || "").split(" ");
 
-            // Parse phone + country code from profile
-            const CODES = ["+49", "+91", "+44", "+33", "+86", "+1"];
+            // Parse phone + country code from profile (longest dial code first)
             let profilePhone = profile.phone || "";
             let profileCode = "+49";
             if (profilePhone && profilePhone.startsWith("+")) {
-              const matched = CODES.find(code => profilePhone.startsWith(code));
+              const matched = DIAL_CODES_LONGEST_FIRST.find(code => profilePhone.startsWith(code));
               if (matched) {
                 profileCode = matched;
                 profilePhone = profilePhone.slice(matched.length).trim();
@@ -711,7 +711,7 @@ const UserDetails = () => {
                   <div className="bg-white rounded-2xl border border-[#0f4c3a]/5 shadow-sm overflow-hidden">
                     {/* Property image */}
                     <div className="relative h-28 overflow-hidden">
-                      <img src={bookingData.image || "/placeholder-property.jpg"} alt={bookingData.title} className="w-full h-full object-cover" />
+                      <img src={bookingData.image || "/placeholder-property.svg"} alt={bookingData.title} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       <div className="absolute bottom-3 left-4 right-4">
                         <p className="text-sm font-serif text-white leading-tight">{bookingData.title}</p>
