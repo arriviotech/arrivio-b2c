@@ -6,6 +6,7 @@ import { supabase } from '../../supabase/client';
 import { useAuth } from '../../context/AuthContext';
 import OptimizedImage from '../../components/common/OptimizedImage';
 import { THUMBNAIL_SIZES } from '../../utils/imageUtils';
+import { unitTypeLabel } from '../../utils/unitTypes';
 
 const STATUS_CONFIG = {
   active: { label: 'Active', color: 'text-[#22C55E]', bg: 'bg-[#22C55E]/10' },
@@ -131,7 +132,7 @@ const MyBookings = () => {
                         <h3 className="font-serif text-sm text-[#111827] truncate">{property.name}</h3>
                         <span className={`px-1.5 py-0.5 rounded-full text-[7px] font-bold uppercase shrink-0 ${statusConfig.bg} ${statusConfig.color}`}>{statusConfig.label}</span>
                       </div>
-                      <p className="text-[9px] text-[#6b7280]">{unit.unit_type?.replace(/_/g, ' ')}{unit.unit_number ? ` · Unit ${unit.unit_number}` : ''}{property.city ? ` · ${property.city}` : ''}</p>
+                      <p className="text-[9px] text-[#6b7280]">{unitTypeLabel(unit.unit_type)}{unit.unit_number ? ` · Unit ${unit.unit_number}` : ''}{property.city ? ` · ${property.city}` : ''}</p>
                       <div className="flex items-center justify-between mt-1.5">
                         <div className="flex items-center gap-1 text-[9px] text-[#9ca3af]">
                           <Calendar size={9} />

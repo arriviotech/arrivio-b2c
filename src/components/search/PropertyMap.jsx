@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 // geoUtils no longer needed — landmark search moved to SearchControlBar
 import 'leaflet/dist/leaflet.css';
 import { Circle } from 'react-leaflet';
+import OptimizedImage from '../common/OptimizedImage';
 
 const FitBoundsToMarkers = ({ properties, geoSearch }) => {
     const map = useMap();
@@ -115,13 +116,13 @@ const PropertyMarker = ({ property, isSelected, createPriceIcon, navigate }) => 
                     className="cursor-pointer group"
                     onClick={() => navigate(`/property/${property.slug || property.id}`)}
                 >
-                    <div className="h-32 w-full overflow-hidden">
-                        <img
-                            src={property.image}
-                            alt={property.title}
-                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                        />
-                    </div>
+                    <OptimizedImage
+                        src={property.image}
+                        alt={property.title}
+                        width={240}
+                        className="h-32 w-full"
+                        imgClassName="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    />
                     <div className="p-3 bg-white">
                         <h4 className="font-serif font-bold text-[#111827] text-sm truncate mb-1">
                             {property.title}

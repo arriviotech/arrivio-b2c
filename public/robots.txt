@@ -1,5 +1,5 @@
 # Arrivio — Crawling Rules
-# https://arrivio-g.vercel.app
+# https://arrivio.global
 
 User-agent: *
 Allow: /
@@ -19,4 +19,4 @@ Disallow: /application/details
 Disallow: /auth/callback
 
 # Sitemap
-Sitemap: https://arrivio-g.vercel.app/sitemap.xml
+Sitemap: https://arrivio.global/sitemap.xml

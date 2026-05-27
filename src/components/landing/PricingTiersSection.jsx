@@ -176,7 +176,7 @@ const PricingTiersSection = () => {
                         {tier.priceLabel}
                       </span>
                       <span className="font-sans text-sm text-[#5C5C50] font-medium">
-                        / month
+                        / {t("collection.month")}
                       </span>
                     </div>
                     <div className="w-12 h-[1px] bg-[#0f4c3a]/10 mx-auto mt-4 group-hover:w-24 transition-all duration-500"></div>

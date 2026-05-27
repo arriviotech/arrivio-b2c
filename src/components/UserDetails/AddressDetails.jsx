@@ -1,12 +1,6 @@
 import React from "react";
 import { MapPin } from "lucide-react";
-
-const COUNTRIES = [
-  "Australia", "Austria", "Belgium", "Canada", "Czech Republic", "Denmark",
-  "Finland", "France", "Germany", "Greece", "Hungary", "India", "Ireland",
-  "Italy", "Netherlands", "Norway", "Poland", "Portugal", "Romania", "Spain",
-  "Sweden", "Switzerland", "Turkey", "United Kingdom", "United States", "Other",
-];
+import CountrySelect from "../common/CountrySelect";
 
 const CITIES_BY_COUNTRY = {
   Germany: [
@@ -40,20 +34,15 @@ const AddressDetails = ({ formData, handleChange }) => {
         {/* Country */}
         <div className="space-y-1.5">
           <label className="text-[11px] font-semibold text-[#4b5563]">Country <span className="text-[#EA4335]">*</span></label>
-          <select
-            name="country" required
+          <CountrySelect
+            mode="country"
+            placeholder="Select country"
             value={formData.country || ""}
-            onChange={(e) => {
-              handleChange(e);
+            onChange={(val) => {
+              handleChange({ target: { name: 'country', value: val } });
               handleChange({ target: { name: 'city', value: '' } });
             }}
-            className={`${inputClass} ${!formData.country ? 'text-[#9ca3af]' : 'text-[#111827]'}`}
-          >
-            <option value="" className="text-[#9ca3af]">Select country</option>
-            {COUNTRIES.map((c) => (
-              <option key={c} value={c} className="text-[#111827]">{c}</option>
-            ))}
-          </select>
+          />
         </div>
 
         {/* Row 2: City + District */}

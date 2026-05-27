@@ -10,6 +10,7 @@ import {
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
+import { unitTypeLabel } from "../utils/unitTypes";
 import { supabase } from "../supabase/client";
 import { useAddonCatalogue, useMyAddonOrders } from "../supabase/hooks/useAddons";
 import DashboardSkeleton from "../components/skeletons/DashboardSkeleton";
@@ -154,7 +155,7 @@ const Profile = () => {
                   </span>
                 </div>
                 <h3 className="font-serif text-xl text-[#111827] mb-1">{property.name}</h3>
-                <p className="text-xs text-[#6b7280] mb-4">{unit.unit_type?.replace(/_/g, ' ')} · Unit {unit.unit_number} · {property.city}</p>
+                <p className="text-xs text-[#6b7280] mb-4">{unitTypeLabel(unit.unit_type)} · Unit {unit.unit_number} · {property.city}</p>
                 <div className="flex items-center gap-4 text-xs text-[#6b7280] mb-5">
                   <span className="flex items-center gap-1"><Calendar size={12} className="text-[#9ca3af]" /> {activeBooking.move_in_date}</span>
                   <span className="text-[#d1d5db]">→</span>
@@ -182,7 +183,7 @@ const Profile = () => {
             applicationId: activeApplication.id,
             propertyId: property.id,
             unitId: activeApplication.unit_id,
-            title: `${property.name}. ${unit.unit_type?.replace(/_/g, ' ')}`,
+            title: `${property.name}. ${unitTypeLabel(unit.unit_type)}`,
             propertyName: property.name,
             unitNumber: unit.unit_number,
             unitType: unit.unit_type,
@@ -244,7 +245,7 @@ const Profile = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-serif text-base text-[#111827] truncate">{property.name}</h3>
-                    <p className="text-[11px] text-[#6b7280] mt-0.5">{unit.unit_type?.replace(/_/g, ' ')}{unit.unit_number ? ` · Unit ${unit.unit_number}` : ''}{property.city ? ` · ${property.city}` : ''}</p>
+                    <p className="text-[11px] text-[#6b7280] mt-0.5">{unitTypeLabel(unit.unit_type)}{unit.unit_number ? ` · Unit ${unit.unit_number}` : ''}{property.city ? ` · ${property.city}` : ''}</p>
                     <div className="flex items-center gap-1.5 mt-2 text-[11px] text-[#9ca3af] flex-wrap">
                       <Calendar size={11} className="shrink-0" />
                       {activeApplication.move_in_date ? (
